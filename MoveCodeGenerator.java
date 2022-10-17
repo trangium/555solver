@@ -1,4 +1,4 @@
-public class FiveByFiveSolver {
+public class MoveCodeGenerator {
     static final int PCCOUNT = 92;
     static final int POSMASK = 127;
     static final int ORIMASK = 384;
@@ -22,7 +22,6 @@ public class FiveByFiveSolver {
             mult(initCube, sequence[j], tempCube);
             for (int i=0; i<PCCOUNT; i++) initCube[i] = tempCube[i];
         }
-        System.out.println("$$\n$$");
         return initCube;
     }
 
@@ -36,12 +35,28 @@ public class FiveByFiveSolver {
     }
     */
 
-    private static void printPzl(int[] pzl) {
-        String acc = "[";
+    private static String printPzl(int[] pzl) {
+        String acc = "{";
         for (int i : pzl) {
-            acc = acc + i + " ";
+            acc = acc + i + ", ";
         }
-        System.out.println(acc + "]\n");
+        return (acc.substring(0, acc.length()-2) + "}");
+    }
+
+    private static void printMoveArray(String[] moves) {
+        String acc = "{";
+        for (String i : moves) {
+            acc = acc + "\"" + i + "\", ";
+        }
+        System.out.println(acc.substring(0, acc.length()-2) + "}");
+    }
+
+    private static void printArr(int[][] arr) {
+        String acc = "{";
+        for (int[] i : arr) {
+            acc = acc + printPzl(i) + ", ";
+        }
+        System.out.println(acc.substring(0, acc.length()-2) + "}\n");
     }
 
     public static void main(String[] args) {
@@ -80,6 +95,7 @@ public class FiveByFiveSolver {
         */
 
         int[] MOVE_U = new int[]{3, 0, 1, 2, 4, 5, 6, 7, 11, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 26, 27, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 47, 44, 45, 46, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 71, 68, 69, 70, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91};
+        int[] MOVE_2U = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 31, 28, 29, 30, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 64, 65, 50, 51, 48, 49, 54, 55, 56, 57, 58, 59, 52, 53, 62, 63, 60, 61, 66, 67, 68, 69, 70, 71, 88, 73, 74, 75, 72, 77, 78, 79, 80, 81, 82, 83, 76, 85, 86, 87, 84, 89, 90, 91};
         int[] MOVE_R = new int[]{0, 258, 133, 3, 4, 262, 129, 7, 8, 14, 10, 11, 12, 9, 17, 15, 16, 13, 18, 19, 20, 21, 30, 34, 24, 25, 26, 27, 28, 23, 38, 31, 32, 22, 39, 35, 36, 37, 33, 29, 40, 41, 42, 43, 44, 45, 46, 47, 51, 48, 49, 50, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 75, 72, 73, 74, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91};
         int[] MOVE_2R = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 24, 22, 23, 37, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 40, 38, 39, 21, 41, 42, 43, 44, 53, 54, 47, 48, 49, 50, 51, 52, 57, 58, 55, 56, 67, 64, 59, 60, 61, 62, 63, 46, 65, 66, 45, 68, 77, 70, 71, 72, 73, 74, 75, 76, 81, 78, 79, 80, 91, 82, 83, 84, 85, 86, 87, 88, 89, 90, 69};
         int[] MOVE_M = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 146, 9, 136, 11, 12, 13, 14, 15, 138, 17, 144, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 90, 69, 88, 71, 72, 73, 74, 75, 68, 77, 70, 79, 76, 81, 78, 83, 84, 85, 86, 87, 82, 89, 80, 91};
@@ -95,6 +111,24 @@ public class FiveByFiveSolver {
         int[] MOVE_B = execute(NULLMOVE, temp4);
         int[][] temp5 = {MOVE_X, MOVE_X, MOVE_U, MOVE_X, MOVE_X};
         int[] MOVE_D = execute(NULLMOVE, temp5);
+        int[][] temp6 = {MOVE_2U, MOVE_U};
+        int[] MOVE_Uw = execute(NULLMOVE, temp6);
+        int[][] temp7 = {MOVE_2U, MOVE_U};
+        int[] MOVE_Rw = execute(NULLMOVE, temp7);
+        int[][] temp8 = {MOVE_2U, MOVE_U};
+        int[] MOVE_Lw = execute(NULLMOVE, temp8);        
+        int[][] temp9 = {MOVE_X, MOVE_U, MOVE_X, MOVE_X, MOVE_X};
+        int[] MOVE_Fw = execute(NULLMOVE, temp9);
+        int[][] temp10 = {MOVE_X, MOVE_X, MOVE_U, MOVE_X, MOVE_X};
+        int[] MOVE_Dw = execute(NULLMOVE, temp10);
+        int[][] temp11 = {MOVE_X, MOVE_X, MOVE_X, MOVE_U, MOVE_X};
+        int[] MOVE_Bw = execute(NULLMOVE, temp11);
+
+        final int[][] CW_MOVES = {MOVE_U, MOVE_R, MOVE_F, MOVE_D, MOVE_L, MOVE_B, MOVE_Uw, MOVE_Rw, MOVE_Fw, MOVE_Dw, MOVE_Lw, MOVE_Bw};
+        final String[] CW_MOVESTR = {"U", "R", "F", "D", "L", "B", "Uw", "Rw", "Fw", "Dw", "Lw", "Bw"};
+
+        int[][] MOVES = new int[36][];
+        String[] MOVESTR = new String[36];
 
         // Demonstrates another way of composing moves
         int[] MOVE_U2 = new int[PCCOUNT];
@@ -103,11 +137,20 @@ public class FiveByFiveSolver {
         int[] MOVE_U3 = new int[PCCOUNT];
         mult(MOVE_U, MOVE_U2, MOVE_U3);
 
-        printPzl(NULLMOVE);
-        printPzl(MOVE_F);
-        printPzl(MOVE_B);
-        printPzl(MOVE_D);
-        printPzl(MOVE_U);
-        printPzl(MOVE_U3);
+        for (int i=0; i<12; i++) {
+            MOVESTR[3*i] = (CW_MOVESTR[i]);
+            MOVES[3*i] = (CW_MOVES[i]);
+            MOVESTR[3*i+1] = (CW_MOVESTR[i]+"2");
+            int[][] doubleMove = {CW_MOVES[i], CW_MOVES[i]};
+            MOVES[3*i+1] = (execute(NULLMOVE, doubleMove));
+            MOVESTR[3*i+2] = (CW_MOVESTR[i]+"'");
+            int[][] tripleMove = {CW_MOVES[i], CW_MOVES[i], CW_MOVES[i]};
+            MOVES[3*i+2] = (execute(NULLMOVE, tripleMove));
+        }
+
+        System.out.println("Moves:");
+        printArr(MOVES);
+        System.out.println("\n\nMove names: ");
+        printMoveArray(MOVESTR);
     }
 }

@@ -66,12 +66,6 @@ public class MoveCodeGenerator {
             else CUBEORI[i] = 1;
         }
 
-        int[] SOLVED = new int[PCCOUNT];
-        for (int i=0; i<PCCOUNT; i++) {
-            if (i < 44) SOLVED[i] = i;
-            else SOLVED[i] = (int)(i/8)+40;
-        }
-
         int[] NULLMOVE = new int[PCCOUNT];
         for (int i=0; i<PCCOUNT; i++) {
             NULLMOVE[i] = i;

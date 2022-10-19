@@ -1,4 +1,4 @@
-import java.util.Arrays;
+import java.util.*;
 
 public class CenterCube {
     private byte[] perm;
@@ -8,6 +8,8 @@ public class CenterCube {
         {{0, 2, 4, 6}, {1, 3, 5, 7}, {8, 16, 24, 32}, {9, 17, 25, 33}, {10, 18, 26, 34}}, // Uw
         {{24, 26, 28, 30}, {25, 27, 29, 31}, {32, 44, 20, 4}, {33, 45, 21, 5}, {34, 36, 22, 6}}, // Rw
     };
+
+    private static final List<String> moveStr = Arrays.asList("U", "R", "Uw", "Rw");
     public static final int numberOfMoves = moves.length;
 
     public CenterCube() {
@@ -73,6 +75,22 @@ public class CenterCube {
     public void executeMove(int moveIndex, int amount) {
         for (int[] positions : moves[moveIndex]) {
             cycle(positions, amount);
+        }
+    }
+
+    public void executeStr(String sequence) {
+        for (String move : sequence.split("\n")) {
+            switch (move.charAt(move.length()-1)) {
+                case '\'': // counterclockwise
+                    executeMove(moveStr.indexOf(move.substring(0, move.length()-1)), 3);
+                    break;
+                case '2':
+                    executeMove(moveStr.indexOf(move.substring(0, move.length()-1)), 2);
+                    break;
+                default:
+                    executeMove(moveStr.indexOf(move), 1);
+                    break;
+            }
         }
     }
 }

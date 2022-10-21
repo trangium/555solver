@@ -16,14 +16,22 @@ public class CenterCube {
         {{8, 10, 12, 14}, {9, 11, 13, 15}, {0, 16, 40, 36}, {7, 23, 47, 35}, {6, 22, 46, 34}}, // Lw
         {{32, 34, 36, 38}, {33, 35, 37, 39}, {0, 14, 44, 26}, {1, 15, 45, 27}, {2, 8, 46, 28}}, // Bw
     };
-
-    private static final List<String> moveStr = Arrays.asList("U", "R", "F", "D", "L", "B", "Uw", "Rw", "Fw", "Dw", "Lw", "Bw");
+    public static final List<String> moveStr = Arrays.asList("U", "R", "F", "D", "L", "B", "Uw", "Rw", "Fw", "Dw", "Lw", "Bw");
     public static final int numberOfMoves = moves.length;
+    public static final byte[] solved = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5};
+    public static final int numberOfPieces = solved.length;
 
     public CenterCube() {
-        perm = new byte[48];
-        for (int i=0; i<48; i++) {
-            perm[i] = (byte)(i/8);
+        perm = new byte[solved.length];
+        for (int i=0; i<solved.length; i++) {
+            perm[i] = solved[i];
+        }
+    }
+
+    public CenterCube(CenterCube other) {
+        perm = new byte[solved.length];
+        for (int i=0; i<solved.length; i++) {
+            perm[i] = other.perm[i];
         }
     }
 

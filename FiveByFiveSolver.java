@@ -175,7 +175,7 @@ public class FiveByFiveSolver {
         if (faceBads[1] + faceBads[3] == 110) acc += incongruTwo;
         if (faceBads[2] + faceBads[4] == 110) acc += incongruTwo;
         
-        if (!pzl.isSolved()) return (int)acc;
+        if (!pzl.isSolved()) return (acc*0.05);
         return 0;
     }
 
@@ -201,7 +201,6 @@ public class FiveByFiveSolver {
         int min_f = h(rootPzl);
 
         while (true) {
-            steps++;
             while (openSetPzls.get(min_f).size() == 0) {
                 min_f++;
             }
@@ -222,7 +221,6 @@ public class FiveByFiveSolver {
                     if (new_f < min_f) {
                         min_f = new_f;
                         // System.out.println(min_f);
-                        // System.out.println(steps);
                         // System.out.println(getSolution(closedSet, rootPzl, new CenterCube(pzl))+CenterCube.moveStr.get(nextMoveIndex)+CenterCube.moveAmts.get(rot));
                     }
                     if (!nbr.equals(pzl)) {
@@ -237,6 +235,7 @@ public class FiveByFiveSolver {
     private static String getSolution(HashMap<CenterCube, Integer> closedSet, CenterCube rootPzl, CenterCube pzl) {
         String solution = "";
         while (!pzl.equals(rootPzl)) {
+            steps += 1;
             int moveData = closedSet.get(pzl);
             int rot = moveData%3;
             int ind = moveData/3;
@@ -245,27 +244,6 @@ public class FiveByFiveSolver {
         }
         return solution;
     }
-
-    /*
-     * 
-    if not isSolvable(root, goal): return "X"
-    openSet = [[] for i in range(160)] # create an openSet with root
-    openSet[h(root)].append((root, None))
-    min_f = h(root)
-    closedSet = {} # create an empty closedSet
-
-    while True:
-        while not openSet[min_f]:
-            min_f += 1
-        pzl, direc = openSet[min_f].pop()
-        if pzl in closedSet: continue
-        closedSet[pzl] = direc
-        if pzl == goal: return findCompactPath(root, goal, closedSet)
-        
-        for nbr in nbrs(pzl):
-            newF = min_f - distanceTable[nbr[holePos]][posFrom] + distanceTable[nbr[holePos]][holePos] + 1
-            openSet[newF].append((nbr, direc))
-     */
 
     public static void main(String[] args) {
         CenterCube pzl;
@@ -283,8 +261,10 @@ public class FiveByFiveSolver {
             pzl = new CenterCube();
             pzl.executeStr(scramble);
             System.out.println(scramble+"\n");
-            System.out.println(solveCenters(pzl));
+            System.out.println(solveCenters(pzl)+"\n");
+            System.out.println(steps);
             System.out.println("\n\n-------------\n\n");
+            steps = 0;
         }
     }
 }

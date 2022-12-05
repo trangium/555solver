@@ -1,6 +1,6 @@
-public interface Cube {
-    public boolean isSolved();
-    public Cube[] getNeighbors();
-    public int h();
-    public String executeInverse(int moveIndex);
+public abstract class Cube {
+    public abstract boolean isSolved();
+    public abstract Cube[] getNeighbors();
+    public abstract int h();
+    public abstract String executeInverse(int moveIndex);
 }

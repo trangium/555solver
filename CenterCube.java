@@ -1,25 +1,78 @@
 import java.util.*;
 
-public class CenterCube implements Cube {
+public class CenterCube extends Cube {
+        static final int UBL = 0;
+    static final int UB = 1;
+    static final int UBR = 2;
+    static final int UR = 3;
+    static final int UFR = 4;
+    static final int UF = 5;
+    static final int UFL = 6;
+    static final int UL = 7;
+
+    static final int LUB = 8;
+    static final int LU = 9;
+    static final int LUF = 10;
+    static final int LF = 11;
+    static final int LDF = 12;
+    static final int LD = 13;
+    static final int LDB = 14;
+    static final int LB = 15;
+
+    static final int FUL = 16;
+    static final int FU = 17;
+    static final int FUR = 18;
+    static final int FR = 19;
+    static final int FDR = 20;
+    static final int FD = 21;
+    static final int FDL = 22;
+    static final int FL = 23;
+
+    static final int RUF = 24;
+    static final int RU = 25;
+    static final int RUB = 26;
+    static final int RB = 27;
+    static final int RDB = 28;
+    static final int RD = 29;
+    static final int RDF = 30;
+    static final int RF = 31;
+
+    static final int BUR = 32;
+    static final int BU = 33;
+    static final int BUL = 34;
+    static final int BL = 35;
+    static final int BDL = 36;
+    static final int BD = 37;
+    static final int BDR = 38;
+    static final int BR = 39;
+
+    static final int DFL = 40;
+    static final int DF = 41;
+    static final int DFR = 42;
+    static final int DR = 43;
+    static final int DBR = 44;
+    static final int DB = 45;
+    static final int DBL = 46;
+    static final int DL = 47;
     private byte[] perm;
     private static final int[][][] moves = {
-        {{0, 2, 4, 6}, {1, 3, 5, 7}}, // U
-        {{24, 26, 28, 30}, {25, 27, 29, 31}}, // R
-        {{16, 18, 20, 22}, {17, 19, 21, 23}}, // F
-        {{40, 42, 44, 46}, {41, 43, 45, 47}}, // D
-        {{8, 10, 12, 14}, {9, 11, 13, 15}}, // L
-        {{32, 34, 36, 38}, {33, 35, 37, 39}}, // B
-        {{0, 2, 4, 6}, {1, 3, 5, 7}, {8, 32, 24, 16}, {9, 33, 25, 17}, {10, 34, 26, 18}}, // Uw
-        {{24, 26, 28, 30}, {25, 27, 29, 31}, {32, 44, 20, 4}, {39, 43, 19, 3}, {38, 42, 18, 2}}, // Rw
-        {{16, 18, 20, 22}, {17, 19, 21, 23}, {4, 30, 40, 10}, {5, 31, 41, 11}, {6, 24, 42, 12}}, // Fw
-        {{40, 42, 44, 46}, {41, 43, 45, 47}, {36, 12, 20, 28}, {37, 13, 21, 29}, {38, 14, 22, 30}}, // Dw
-        {{8, 10, 12, 14}, {9, 11, 13, 15}, {0, 16, 40, 36}, {7, 23, 47, 35}, {6, 22, 46, 34}}, // Lw
-        {{32, 34, 36, 38}, {33, 35, 37, 39}, {0, 14, 44, 26}, {1, 15, 45, 27}, {2, 8, 46, 28}}, // Bw
+        {{UBL, UBR, UFR, UFL}, {UB, UR, UF, UL}}, // U
+        {{RUF, RUB, RDB, RDF}, {RU, RB, RD, RF}}, // R
+        {{FUL, FUR, FDR, FDL}, {FU, FR, FD, FL}}, // F
+        {{DFL, DFR, DBR, DBL}, {DF, DR, DB, DL}}, // D
+        {{LUB, LUF, LDF, LDB}, {LU, LF, LD, LB}}, // L
+        {{BUR, BUL, BDL, BDR}, {BU, BL, BD, BR}}, // B
+        {{UBL, UBR, UFR, UFL}, {UB, UR, UF, UL}, {LUB, BUR, RUF, FUL}, {LU, BU, RU, FU}, {LUF, BUL, RUB, FUR}}, // Uw
+        {{RUF, RUB, RDB, RDF}, {RU, RB, RD, RF}, {BUR, DBR, FDR, UFR}, {BR, DR, FR, UR}, {BDR, DFR, FUR, UBR}}, // Rw
+        {{FUL, FUR, FDR, FDL}, {FU, FR, FD, FL}, {UFR, RDF, DFL, LUF}, {UF, RF, DF, LF}, {UFL, RUF, DFR, LDF}}, // Fw
+        {{DFL, DFR, DBR, DBL}, {DF, DR, DB, DL}, {BDL, LDF, FDR, RDB}, {BD, LD, FD, RD}, {BDR, LDB, FDL, RDF}}, // Dw
+        {{LUB, LUF, LDF, LDB}, {LU, LF, LD, LB}, {UBL, FUL, DFL, BDL}, {UL, FL, DL, BL}, {UFL, FDL, DBL, BUL}}, // Lw
+        {{BUR, BUL, BDL, BDR}, {BU, BL, BD, BR}, {UBL, LDB, DBR, RUB}, {UB, LB, DB, RB}, {UBR, LUB, DBL, RDB}}, // Bw
     };
     public static final List<String> moveStr = Arrays.asList("U", "R", "F", "D", "L", "B", "Uw", "Rw", "Fw", "Dw", "Lw", "Bw");
     public static final List<String> moveAmts = Arrays.asList("", "2", "'");
     public static final int numberOfMoves = moves.length;
-    public static final byte[] solved = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 3, 3, 3, 3, 3, 3, 3, 3};
+    public static final byte[] solved = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0};
     public static final int numberOfPieces = solved.length;
 
     public CenterCube() {
@@ -149,60 +202,6 @@ public class CenterCube implements Cube {
         return solutionMove;
     }
 
-    static final int UBL = 0;
-    static final int UB = 1;
-    static final int UBR = 2;
-    static final int UR = 3;
-    static final int UFR = 4;
-    static final int UF = 5;
-    static final int UFL = 6;
-    static final int UL = 7;
-
-    static final int LUB = 8;
-    static final int LU = 9;
-    static final int LUF = 10;
-    static final int LF = 11;
-    static final int LDF = 12;
-    static final int LD = 13;
-    static final int LDB = 14;
-    static final int LB = 15;
-
-    static final int FUL = 16;
-    static final int FU = 17;
-    static final int FUR = 18;
-    static final int FR = 19;
-    static final int FDR = 20;
-    static final int FD = 21;
-    static final int FDL = 22;
-    static final int FL = 23;
-
-    static final int RUF = 24;
-    static final int RU = 25;
-    static final int RUB = 26;
-    static final int RB = 27;
-    static final int RDB = 28;
-    static final int RD = 29;
-    static final int RDF = 30;
-    static final int RF = 31;
-
-    static final int BUR = 32;
-    static final int BU = 33;
-    static final int BUL = 34;
-    static final int BL = 35;
-    static final int BDL = 36;
-    static final int BD = 37;
-    static final int BDR = 38;
-    static final int BR = 39;
-
-    static final int DFL = 40;
-    static final int DF = 41;
-    static final int DFR = 42;
-    static final int DR = 43;
-    static final int DBR = 44;
-    static final int DB = 45;
-    static final int DBL = 46;
-    static final int DL = 47;
-
     private boolean pcsSolvedHTR(int[] positions) { // reduce to HTR
         for (int pos : positions) {
             if (perm[pos]%3 != solved[pos]%3) return false;
@@ -273,55 +272,7 @@ public class CenterCube implements Cube {
             if (!anySetSolvedPseudo(new int[][] {{BUL, BU, BUR}, {BUR, BR, BDR}, {BDR, BD, BDL}, {BDL, BL, BUL}}, 1)) return 480;
             return 479;
         }
-        double acc = 250;
-
-        double pair = 0.5;
-        double line = 0.5;
-        double badLine = 1;
-        double veryBadLine = 5;
-        double square = 4;
-        double rectangle = 5;
-        double badSquare = 8;
-        double veryBadSquare = 7;
-        double incongruTwo = 5;
-        double congruThree = 6.5;
-        int[] faceBads = new int[6];
-        for (int i=0; i<48; i+=8) {
-            faceBads[i/8] = 0;
-            for (int j=0; j<8; j+=2) {
-                byte a = perm[i+j]; // corner
-                byte b = perm[i+((j+1)%8)]; // edge
-                byte c = perm[i+((j+2)%8)]; // corner
-                byte d = perm[i+((j+3)%8)]; // edge
-                byte e = perm[i+((j+4)%8)]; // corner
-                byte f = perm[i+((j+5)%8)]; // edge
-                byte g = perm[i+((j+6)%8)]; // corner
-                byte h = perm[i+((j+7)%8)]; // edge
-                byte m = CenterCube.solved[i+j];
-                if (a==b) acc -= pair;
-                if (b==c) acc -= pair;
-                if (a==m && b==m && c==m) acc -= line;
-                if (a==m && b!=m && c==m) acc += badLine;
-                if (b==m && c==m && d==m) acc -= square;
-                if (b==m && c!=m && d==m) acc += badSquare;
-                if (b==m && c==m && d==m && e==m && f==m) {
-                    acc -= rectangle;
-                    if (a==m && h!=m && g!=m) faceBads[i/8] = 10;
-                    if (g==m && h!=m && a!=m) faceBads[i/8] = 100;
-                    if (a!=m && h==m && g==m) acc += veryBadSquare;
-                    if (a==m && h!=m && g==m) acc += veryBadLine;
-                    if (a!=m && h!=m && g!=m) faceBads[i/8] = 1;
-                }
-            }
-        }
-        if (faceBads[0] + faceBads[5] == 110) acc += incongruTwo;
-        if (faceBads[1] + faceBads[3] == 110) acc += incongruTwo;
-        if (faceBads[2] + faceBads[4] == 110) acc += incongruTwo;
-        if (faceBads[0] + faceBads[5] == 2) acc -= congruThree;
-        if (faceBads[1] + faceBads[3] == 2) acc -= congruThree;
-        if (faceBads[2] + faceBads[4] == 2) acc -= congruThree;
-        
-        if (!this.isSolved()) return (acc*0.05);
+        if (!this.isSolved()) return 478;
         return 0;
     }
 

@@ -6,7 +6,7 @@ public class FiveByFiveSolver {
     static int steps = 0;
 
     
-    private static String solveCenters(Cube rootPzl) {
+    private static String solve(Cube rootPzl) {
         final int MAXDEPTH = 1300;
         List<Stack<Cube>> openSetPzls = new ArrayList<Stack<Cube>>();
         for (int i=0; i<MAXDEPTH; i++) {
@@ -79,7 +79,7 @@ public class FiveByFiveSolver {
             // pzl = new CenterCube();
             pzl.executeStr(scramble);
             //System.out.println(scramble+"\n");
-            System.out.println(solveCenters(pzl)+"\n");
+            System.out.println(solve(pzl)+"\n");
             System.out.println(steps);
             System.out.println("\n\n-------------\n\n");
         }
@@ -89,7 +89,7 @@ public class FiveByFiveSolver {
         String setup = "Lw' Dw2 Uw R' Fw L2 U' Fw2 Dw2 D' F Dw2 L Bw2 Rw' B' Lw2 Dw Fw2 L D' Dw2 L Dw R2 D2 F2 B2 Lw Uw' Fw2 Rw' F Fw2 Lw' Fw' L2 Uw' U Lw' F2 R' U L Uw' R' Fw' D Rw' Lw' L' Bw D' Bw2 L U' Uw' Bw R2 Uw' Bw'";
         CenterCube pzl = new CenterCube();
         pzl.executeStr(setup);
-        String alg = solveCenters(pzl);
+        String alg = solve(pzl);
         String demoURI = ("https://alg.cubing.net/?puzzle=5x5x5&alg="+alg+"&setup="+setup).replaceAll(" ","%20");;
         try {
             Desktop desktop = java.awt.Desktop.getDesktop();
@@ -100,8 +100,18 @@ public class FiveByFiveSolver {
         }
     }
 
+    public static void edgeCubeTest() {
+        String setup = "R U' B2 L U R' Uw2 B' Rw2 U Fw2 B Lw2 R Bw2";
+        EdgeCube pzl = new EdgeCube();
+        pzl.executeStr(setup);
+        System.out.println((pzl).swapCount());
+        String alg = solve(pzl);
+        System.out.println(alg);
+    }
+
     public static void main(String[] args) {
         // stressTest();
-        webDemo();
+        // webDemo();
+        edgeCubeTest();
     }
 }

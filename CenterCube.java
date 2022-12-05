@@ -1,7 +1,7 @@
 import java.util.*;
 
 public class CenterCube extends Cube {
-        static final int UBL = 0;
+    static final int UBL = 0;
     static final int UB = 1;
     static final int UBR = 2;
     static final int UR = 3;
@@ -147,6 +147,12 @@ public class CenterCube extends Cube {
                 perm[positions[1]] = temp;
                 return;
         }
+    }
+
+    public void swap(int p1, int p2) {
+        byte temp = perm[p1];
+        perm[p1] = perm[p2];
+        perm[p2] = temp;
     }
 
     public void executeMove(int moveIndex, int amount) {

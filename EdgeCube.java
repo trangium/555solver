@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class EdgeCube extends Cube { // currently a CenterCube. Change all the methods.
+public class EdgeCube extends Cube { 
     static final int UBL = 0;
     static final int UB = 1;
     static final int UBR = 2;
@@ -152,6 +152,39 @@ public class EdgeCube extends Cube { // currently a CenterCube. Change all the m
     public static final int numberOfCenters = centerSolved.length;
     public static final int numberOfWings = wingSolved.length;
     public static final int numberOfMidges = midgeSolved.length;
+    public static final HashMap<Integer, Integer> htrCenterPrun;
+
+    static {
+        CenterCube pzl = new CenterCube();
+        HashMap<CenterCube, Integer> depths = new HashMap<CenterCube, Integer>();
+        depths.put(pzl, 0);
+        for (int depth=1; depth<=6; depth++) {
+            HashSet<CenterCube> prevNodes = new HashSet<CenterCube>(depths.keySet());
+            for (CenterCube node : prevNodes) {
+                for (int u=0; u<4; u++) {
+                    for (int l=0; l<4; l++) {
+                        CenterCube nbr = new CenterCube(node);
+                        nbr.swap(2, 10);
+                        nbr.swap(3, 11);
+                        nbr.swap(4, 12);
+                        if (u!=3) nbr.executeMove(0, u);
+                        if (l!=3) nbr.executeMove(4, l);
+                        if (!depths.containsKey(nbr)) depths.put(nbr, depth);
+                    }
+                }
+            }
+        }
+        HashMap<Integer, Integer> centerPrun = new HashMap<Integer, Integer>();
+        for (CenterCube node : depths.keySet()) {
+            int ctrId = 0;
+            for (int i=0; i<16; i++) {
+                ctrId *= 2;
+                ctrId += node.getPerm()[i];
+            }
+            centerPrun.put(ctrId, depths.get(node));
+        }
+        htrCenterPrun = new HashMap<Integer, Integer>(centerPrun);
+    }
 
     public EdgeCube() {
         centerPerm = new byte[centerSolved.length];
@@ -227,15 +260,16 @@ public class EdgeCube extends Cube { // currently a CenterCube. Change all the m
     }
 
     public boolean isSolved() { 
-        for (int i=0; i<centerSolved.length; i++) {
-            if (centerPerm[i] != centerSolved[i]) return false;
-        }
-        byte i=0;
-        for (byte val : this.getWingCycles()) {
-            if (val != i) return false;
-            i++;
-        }
-        return true;
+        // for (int i=0; i<centerSolved.length; i++) {
+        //     if (centerPerm[i] != centerSolved[i]) return false;
+        // }
+        // byte i=0;
+        // for (byte val : this.getWingCycles()) {
+        //     if (val != i) return false;
+        //     i++;
+        // }
+        // return true;
+        return (h() <= 9);
     }
 
     private void cycle(byte[] pieceArr, int[] positions, int amount, boolean flip) { 
@@ -280,7 +314,7 @@ public class EdgeCube extends Cube { // currently a CenterCube. Change all the m
     public void executeMove(int moveIndex, int amount) { 
         for (int[] positions : centerMoves[moveIndex]) cycle(centerPerm, positions, amount, false);
         for (int[] positions : wingMoves[moveIndex]) cycle(wingPerm, positions, amount, false);
-        for (int[] positions : midgeMoves[moveIndex]) cycle(midgePerm, positions, amount, (moveIndex == 2 || moveIndex == 5) ? true : false);
+        for (int[] positions : midgeMoves[moveIndex]) cycle(midgePerm, positions, amount, (moveIndex%3 == 2) ? true : false);
     }
 
     public void executeStr(String sequence) {
@@ -328,9 +362,8 @@ public class EdgeCube extends Cube { // currently a CenterCube. Change all the m
         return solutionMove;
     }
 
-    public int swapCount() {
+    public int swapCount(byte[] wingCycles) {
         int swaps = 0;
-        byte[] wingCycles = getWingCycles();
         int needle = 0;
         while (needle < numberOfWings) {
             if (wingCycles[needle] == needle) needle++;
@@ -344,7 +377,34 @@ public class EdgeCube extends Cube { // currently a CenterCube. Change all the m
         return swaps;
     }
 
+    public int flipCount(byte[] wingCycles) {
+        int flips = 0;
+        for (int i=0; i<numberOfWings; i++) {
+            if (wingCycles[i^1] == i) flips++;
+        }
+        return flips;
+    }
+
+    public int centerDistance(int index1, int index2) {
+        int ctrId = 0;
+        for (int i=index1; i<index1+8; i++) {
+            ctrId *= 2;
+            ctrId += (centerPerm[i] == centerSolved[index1]) ? 0 : 1;
+        }
+        for (int i=index2; i<index2+8; i++) {
+            ctrId *= 2;
+            ctrId += (centerPerm[i] == centerSolved[index1]) ? 0 : 1;
+        }
+        return EdgeCube.htrCenterPrun.get(ctrId);
+    }
+
     public int h() {
-        return swapCount(); // (int)(h_helper() * 2);
+        byte[] wingCycles = getWingCycles();
+        int wing_h = flipCount(wingCycles) + swapCount(wingCycles);
+        int ctr_h = centerDistance(0, 40) + centerDistance(8, 24) + centerDistance(16, 32);
+        if (ctr_h == 3) ctr_h = 4;
+        if (ctr_h == 1) ctr_h = 3;
+        final double gamma = 3;
+        return (int)Math.pow(Math.pow(wing_h, gamma)*5 + Math.pow(ctr_h, gamma)*2, 1/gamma);
     }
 }

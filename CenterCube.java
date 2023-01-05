@@ -72,8 +72,8 @@ public class CenterCube extends Cube {
     public static final List<String> moveStr = Arrays.asList("U", "R", "F", "D", "L", "B", "Uw", "Rw", "Fw", "Dw", "Lw", "Bw");
     public static final List<String> moveAmts = Arrays.asList("", "2", "'");
     public static final int numberOfMoves = moves.length;
-    public static final byte[] solved = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0};
-    public static final int numberOfPieces = solved.length;
+    public static final byte[] solved = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    public static final int numberOfPieces = solved.length-1;
 
     public CenterCube() {
         perm = new byte[solved.length];
@@ -159,6 +159,9 @@ public class CenterCube extends Cube {
         for (int[] positions : moves[moveIndex]) {
             cycle(positions, amount);
         }
+        if (moveIndex >= 6 && amount != 1) {
+            perm[numberOfPieces] ^= 1;
+        }
     }
 
     public void executeStr(String sequence) {
@@ -197,7 +200,7 @@ public class CenterCube extends Cube {
     //         acc += moveStr.get(move/3);
     //         if (acc%3)
     //     }
-    //     return acc.substring(0, acc.length()-1);
+    //     return acc.substring(0, acc.length()-1); 
     // }
 
     public String executeInverse(int moveIndex) {
@@ -246,39 +249,39 @@ public class CenterCube extends Cube {
     }
 
     private double h_helper() {
-        if (!anySetSolvedHTR(new int[][] {{UB}, {UR}, {UF}, {UL}})) return 500;
-        if (!anySetSolvedHTR(new int[][] {{UB, UBR, UR}, {UR, UFR, UF}, {UF, UFL, UL}, {UL, UBL, UB}})) return 499;
-        if (!anySetSolvedHTR(new int[][] {{UB, UBR, UR, UFR, UF}, {UR, UFR, UF, UFL, UL}, {UF, UFL, UL, UBL, UB}, {UL, UBL, UB, UBR, UR}})) return 498;
-        if (!anySetSolvedHTR(new int[][] {{DB}, {DR}, {DF}, {DL}})) return 497;
-        if (!anySetSolvedHTR(new int[][] {{DB, DBL, DL}, {DF, DFL, DL}, {DB, DBR, DR}, {DF, DFR, DR}})) return 496;
-        if (!anySetSolvedHTR(new int[][] {{DB, DBR, DR, DFR, DF}, {DR, DFR, DF, DFL, DL}, {DF, DFL, DL, DBL, DB}, {DL, DBL, DB, DBR, DR}})) return 495;
+        if (!anySetSolvedHTR(new int[][] {{UB}, {UR}, {UF}, {UL}})) return 25;
+        if (!anySetSolvedHTR(new int[][] {{UB, UBR, UR}, {UR, UFR, UF}, {UF, UFL, UL}, {UL, UBL, UB}})) return 24;
+        if (!anySetSolvedHTR(new int[][] {{UB, UBR, UR, UFR, UF}, {UR, UFR, UF, UFL, UL}, {UF, UFL, UL, UBL, UB}, {UL, UBL, UB, UBR, UR}})) return 23;
+        if (!anySetSolvedHTR(new int[][] {{DB}, {DR}, {DF}, {DL}})) return 22;
+        if (!anySetSolvedHTR(new int[][] {{DB, DBL, DL}, {DF, DFL, DL}, {DB, DBR, DR}, {DF, DFR, DR}})) return 21;
+        if (!anySetSolvedHTR(new int[][] {{DB, DBR, DR, DFR, DF}, {DR, DFR, DF, DFL, DL}, {DF, DFL, DL, DBL, DB}, {DL, DBL, DB, DBR, DR}})) return 20;
         if (!anySetSolvedHTR(new int[][] {{0, 1, 2, 3, 4, 5, 6, 7, 40, 41, 42, 43, 44, 45, 46, 47}})) {
             if (!anySetSolvedPseudo(new int[][] {{FUR, FR, FDR, BUR, BR, BDR}, {FUL, FL, FDL, BUL, BL, BDL}}, 0)) {
                 int topHTR = countSolvedHTR(new int[] {0, 1, 2, 3, 4, 5, 6, 7}, 0);
                 int bottomHTR = countSolvedHTR(new int[] {40, 41, 42, 43, 44, 45, 46, 47}, 0);
-                if (topHTR != 8 && topHTR != 5) return 494;
-                if (bottomHTR != 8 && bottomHTR != 5) return 493;
-                if (topHTR != 8 && bottomHTR != 8) return 492;
+                if (topHTR != 8 && topHTR != 5) return 19;
+                if (bottomHTR != 8 && bottomHTR != 5) return 18;
+                if (topHTR != 8 && bottomHTR != 8) return 17;
                 if (!anySetSolvedPseudo(new int[][] {{FUL, FU, FUR}, {FUR, FR, FDR}, {FDR, FD, FDL}, {FDL, FL, FUL}, {BUL, BU, BUR}, {BUR, BR, BDR}, {BDR, BD, BDL}, {BDL, BL, BUL}}, 0)) {
-                    if (!anySetSolvedPseudo(new int[][] {{FUL, FU}, {FU, FUR}, {FUR, FR}, {FR, FDR}, {FDR, FD}, {FD, FDL}, {FDL, FL}, {FL, FUL}, {BUL, BU}, {BU, BUR}, {BUR, BR}, {BR, BDR}, {BDR, BD}, {BD, BDL}, {BDL, BL}, {BL, BUL}}, 0)) return 491;
-                    return 490;
+                    if (!anySetSolvedPseudo(new int[][] {{FUL, FU}, {FU, FUR}, {FUR, FR}, {FR, FDR}, {FDR, FD}, {FD, FDL}, {FDL, FL}, {FL, FUL}, {BUL, BU}, {BU, BUR}, {BUR, BR}, {BR, BDR}, {BDR, BD}, {BD, BDL}, {BDL, BL}, {BL, BUL}}, 0)) return 16;
+                    return 15;
                 }
-                return 489;
+                return 14;
             }
-            return 488;
+            return 13;
         }
-        if (!anySetSolvedHTR(new int[][] {{LU}, {LF}, {LD}, {LB}})) return 487;
-        if (!anySetSolvedHTR(new int[][] {{LU, LUF, LF}, {LF, LDF, LD}, {LD, LDB, LB}, {LB, LUB, LU}})) return 486;
-        if (!anySetSolvedHTR(new int[][] {{LU, LUF, LF, LDF, LD}, {LF, LDF, LD, LDB, LB}, {LD, LDB, LB, LUB, LU}, {LB, LUB, LU, LUF, LF}})) return 485;
-        if (!anySetSolvedHTR(new int[][] {{RU}, {RF}, {RD}, {RB}})) return 484;
-        if (!anySetSolvedHTR(new int[][] {{RU, RUF, RF}, {RF, RDF, RD}, {RD, RDB, RB}, {RB, RUB, RU}})) return 483;
-        if (!anySetSolvedHTR(new int[][] {{RU, RUF, RF, RDF, RD}, {RF, RDF, RD, RDB, RB}, {RD, RDB, RB, RUB, RU}, {RB, RUB, RU, RUF, RF}})) return 482;
+        if (!anySetSolvedHTR(new int[][] {{LU}, {LF}, {LD}, {LB}})) return 12;
+        if (!anySetSolvedHTR(new int[][] {{LU, LUF, LF}, {LF, LDF, LD}, {LD, LDB, LB}, {LB, LUB, LU}})) return 11;
+        if (!anySetSolvedHTR(new int[][] {{LU, LUF, LF, LDF, LD}, {LF, LDF, LD, LDB, LB}, {LD, LDB, LB, LUB, LU}, {LB, LUB, LU, LUF, LF}})) return 10;
+        if (!anySetSolvedHTR(new int[][] {{RU}, {RF}, {RD}, {RB}})) return 9;
+        if (!anySetSolvedHTR(new int[][] {{RU, RUF, RF}, {RF, RDF, RD}, {RD, RDB, RB}, {RB, RUB, RU}})) return 8;
+        if (!anySetSolvedHTR(new int[][] {{RU, RUF, RF, RDF, RD}, {RF, RDF, RD, RDB, RB}, {RD, RDB, RB, RUB, RU}, {RB, RUB, RU, RUF, RF}})) return 7;
         if (!anySetSolvedHTR(new int[][] {{8, 9, 10, 11, 12, 13, 14, 15, 24, 25, 26, 27, 28, 29, 30, 31}})) {
-            if (!anySetSolvedPseudo(new int[][] {{FUL, FU, FUR}, {FUR, FR, FDR}, {FDR, FD, FDL}, {FDL, FL, FUL}}, 1)) return 481;
-            if (!anySetSolvedPseudo(new int[][] {{BUL, BU, BUR}, {BUR, BR, BDR}, {BDR, BD, BDL}, {BDL, BL, BUL}}, 1)) return 480;
-            return 479;
+            if (!anySetSolvedPseudo(new int[][] {{FUL, FU, FUR}, {FUR, FR, FDR}, {FDR, FD, FDL}, {FDL, FL, FUL}}, 1)) return 6;
+            if (!anySetSolvedPseudo(new int[][] {{BUL, BU, BUR}, {BUR, BR, BDR}, {BDR, BD, BDL}, {BDL, BL, BUL}}, 1)) return 5;
+            return 4;
         }
-        if (!this.isSolved()) return 478;
+        if (!this.isSolved()) return 3;
         return 0;
     }
 

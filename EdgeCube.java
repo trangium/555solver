@@ -169,7 +169,9 @@ public class EdgeCube extends Cube {
                         nbr.swap(4, 12);
                         if (u!=3) nbr.executeMove(0, u);
                         if (l!=3) nbr.executeMove(4, l);
-                        if (!depths.containsKey(nbr)) depths.put(nbr, depth);
+                        boolean align = (u==3 && l==3) || (u==2-l);
+                        int newDepth = align ? 2*depth-1 : 2*depth;
+                        if (!depths.containsKey(nbr) || depths.get(nbr) > newDepth) depths.put(nbr, newDepth);
                     }
                 }
             }
@@ -260,16 +262,15 @@ public class EdgeCube extends Cube {
     }
 
     public boolean isSolved() { 
-        // for (int i=0; i<centerSolved.length; i++) {
-        //     if (centerPerm[i] != centerSolved[i]) return false;
-        // }
-        // byte i=0;
-        // for (byte val : this.getWingCycles()) {
-        //     if (val != i) return false;
-        //     i++;
-        // }
-        // return true;
-        return (h() <= 9);
+        byte[] wingCycles = getWingCycles();
+        int wing_h = flipCount(wingCycles) + swapCount(wingCycles);
+        int ctr_1 = (centerDistance(0, 40)+1)/2;
+        int ctr_2 = (centerDistance(8, 24)+1)/2;
+        int ctr_3 = (centerDistance(16, 32)+1)/2;
+        final int wingMax = 4;
+        final int cMax = 2;
+        final int cSumMax = 4; 
+        return (wing_h <= wingMax && ctr_1 <= cMax && ctr_2 <= cMax && ctr_3 <= cMax && (ctr_1 + ctr_2 + ctr_3) <= cSumMax);
     }
 
     private void cycle(byte[] pieceArr, int[] positions, int amount, boolean flip) { 
@@ -398,13 +399,19 @@ public class EdgeCube extends Cube {
         return EdgeCube.htrCenterPrun.get(ctrId);
     }
 
+    public double scaleHeuristic(double x) {
+        if (x <= 4) return x * 5;
+        if (x <= 6) return scaleHeuristic(4) + 3*(x-4);
+        if (x <= 8) return scaleHeuristic(6) + 2.5*(x-6);
+        if (x <= 10) return scaleHeuristic(8) + 2*(x-8);
+        return scaleHeuristic(10) + (x-10);
+    }
+
     public int h() {
         byte[] wingCycles = getWingCycles();
         int wing_h = flipCount(wingCycles) + swapCount(wingCycles);
         int ctr_h = centerDistance(0, 40) + centerDistance(8, 24) + centerDistance(16, 32);
-        if (ctr_h == 3) ctr_h = 4;
-        if (ctr_h == 1) ctr_h = 3;
-        final double gamma = 3;
-        return (int)Math.pow(Math.pow(wing_h, gamma)*5 + Math.pow(ctr_h, gamma)*2, 1/gamma);
+        double h_max = Math.max(ctr_h * 0.5, wing_h);
+        return (int)scaleHeuristic(h_max);
     }
 }

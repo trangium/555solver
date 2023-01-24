@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class CubeNode implements Comparable<CubeNode> {
     private Cube cube;
     private double f;
@@ -28,12 +30,12 @@ public class CubeNode implements Comparable<CubeNode> {
         return prevMove;
     }
 
-    public CubeNode[] getNeighbors() {
+    public ArrayList<CubeNode> getNeighbors() {
         Cube[] cubeNbrs = cube.getNeighbors();
-        CubeNode[] acc = new CubeNode[cubeNbrs.length];
-        for (int i=0; i<cubeNbrs.length; i++) {
-            acc[i] = new CubeNode(cubeNbrs[i], 1+f+cubeNbrs[i].h()-cube.h(), i);
-        }
+        ArrayList<CubeNode> acc = new ArrayList<CubeNode>();
+        for (int i=0; i<cubeNbrs.length; i++) 
+            if (prevMove == -1 || cube.isValidPair(prevMove, i))
+                acc.add(new CubeNode(cubeNbrs[i], 1+f+cubeNbrs[i].h()-cube.h(), i));
         return acc;
     }
 

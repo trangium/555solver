@@ -145,6 +145,8 @@ public class EdgeCube extends Cube {
 
     public static final List<String> moveStr = Arrays.asList("U", "R", "F", "D", "L", "B", "Uw", "Rw", "Fw", "Dw", "Lw", "Bw");
     public static final List<String> moveAmts = Arrays.asList("", "2", "'");
+    private static final int[] axis = {0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 1, 2, 0, 1, 2};
+    private static final int[] moveType = {0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, -6, -5, -4, -3, -2, -1};
     public static final int numberOfMoves = centerMoves.length;
     public static final byte[] centerSolved = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 3, 3, 3, 3, 3, 3, 3, 3};
     public static final byte[] wingSolved = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
@@ -348,6 +350,11 @@ public class EdgeCube extends Cube {
         return nbrs;
     }
 
+    public boolean isValidPair(int i1, int i2) {
+        if (axis[i1] != axis[i2]) return true;
+        return (moveType[i1] < moveType[i2]);
+    }
+
     public String executeInverse(int moveIndex) {
         int rot;
         int ind;
@@ -400,18 +407,19 @@ public class EdgeCube extends Cube {
     }
 
     public double scaleHeuristic(double x) {
-        if (x <= 4) return x * 5;
-        if (x <= 6) return scaleHeuristic(4) + 3*(x-4);
+        if (x <= 6) return 3*x;
         if (x <= 8) return scaleHeuristic(6) + 2.5*(x-6);
         if (x <= 10) return scaleHeuristic(8) + 2*(x-8);
-        return scaleHeuristic(10) + (x-10);
+        if (x <= 12) return scaleHeuristic(10) + 1.5*(x-10);
+        return scaleHeuristic(12) + 1*(x-12);
     }
 
-    public int h() {
+    public double h() {
+        if (isSolved()) return 0;
         byte[] wingCycles = getWingCycles();
         int wing_h = flipCount(wingCycles) + swapCount(wingCycles);
         int ctr_h = centerDistance(0, 40) + centerDistance(8, 24) + centerDistance(16, 32);
         double h_max = Math.max(ctr_h * 0.5, wing_h);
-        return (int)scaleHeuristic(h_max);
+        return (int)(scaleHeuristic(h_max));
     }
 }

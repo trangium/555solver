@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch EquatorPrun",
+            "request": "launch",
+            "mainClass": "EquatorPrun",
+            "projectName": "555solver_45d812ed"
+        },
+        {
+            "type": "java",
             "name": "Launch Current File",
             "request": "launch",
             "mainClass": "${file}"

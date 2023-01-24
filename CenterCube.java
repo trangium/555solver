@@ -194,6 +194,18 @@ public class CenterCube extends Cube {
         return nbrs;
     }
 
+    // determines whether the move of getNeighbors[i1] and the move of getNeighbors[i2] commute.
+    private boolean commutes(int i1, int i2) {
+        if (i1 < 18 && i1 < 18) return true;
+        return ((i1/3)%3 == (i2/3)%3);
+    }
+
+    // potential speed improvement: extract to lookup table
+    public boolean isValidPair(int i1, int i2) {
+        if (!commutes(i1, i2)) return true;
+        return (i1/3 < i2/3);
+    }
+
     // public String moveListToStr(int[] sequence) {
     //     String acc = "";
     //     for (int move : sequence) {
@@ -285,7 +297,7 @@ public class CenterCube extends Cube {
         return 0;
     }
 
-    public int h() {
-        return (int)(h_helper() * 2);
+    public double h() {
+        return (h_helper() * 2);
     }
 }

@@ -267,44 +267,34 @@ public class EquatorPrun {
 
     public static void writeToFile() {
         try {
-            FileWriter f = new FileWriter("equatorPrun.txt");
+            FileWriter f = new FileWriter("equator.prun");
+            BufferedWriter writer = new BufferedWriter(f);
             
-            for (int i=0; i<37590; i++) f.write(symReference[i] + " ");
-            for (int i=0; i<8192; i++) f.write(centerTransformTable[i] + " ");
-            for (int i=0; i<220160; i++) f.write(fullDepthTable[i] + "");
+            for (int i=0; i<37590; i++) {
+                writer.write(symReference[i] >> 8);
+                writer.write(symReference[i] & 255);
+            }
+            for (int i=0; i<8192; i++) writer.write(centerTransformTable[i]);
+            for (int i=0; i<220160; i++) writer.write(fullDepthTable[i]);
             f.close();
         } catch (Exception FileNotFoundException) {
-            System.out.println("File equatorPrun.txt does not exist");
+            System.out.println("File equator.prun does not exist");
         }
     }
 
     public static void readLookup() {
         try {
-            Scanner s = new Scanner(new File("equatorPrun.txt"));
-            s.useDelimiter(" ");
-            for (int i=0; i<37590; i++) symReference[i] = Integer.parseInt(s.next());
-            for (int i=0; i<8192; i++) centerTransformTable[i] = Integer.parseInt(s.next());
-            s.useDelimiter("");
-            s.next();
-            for (int i=0; i<220160; i++) fullDepthTable[i] = Integer.parseInt(s.next());
-        } catch (FileNotFoundException e) {
-            System.out.println("File equatorPrun.txt does not exist");
-        }
-    }
-
-    public static void readLookupBF() {
-        try {
-            FileReader f = new FileReader("equatorPrun.txt");
+            FileReader f = new FileReader("equator.prun");
             BufferedReader reader = new BufferedReader(f);
 
-            for (int i=0; i<20; i++) System.out.println(reader.read());
+            for (int i=0; i<37590; i++) symReference[i] = (reader.read() << 8) + reader.read();
+            for (int i=0; i<8192; i++) centerTransformTable[i] = reader.read();
+            for (int i=0; i<220160; i++) fullDepthTable[i] = reader.read();
 
             reader.close();
-            
-            
 
         } catch (IOException e) {
-            System.out.println("File equatorPrun.txt does not exist");
+            System.out.println("File equator.prun does not exist");
         }
     }
 
@@ -323,28 +313,15 @@ public class EquatorPrun {
         }
     }
 
-    public static void writeToString() {
-        String acc = "";
-        try {
-            FileWriter f = new FileWriter("equatorPrun.txt");
-            f.write(acc);
-            f.close();
-        } catch (Exception FileNotFoundException) {
-            System.out.println("File equatorPrun.txt does not exist");
-        }
-    }
-
     public static void main(String[] args) {
         // fullbfs();
         // writeToFile();
 
         double t = System.currentTimeMillis();
         readLookup();
-        testTables();
         System.out.println("\n"+(System.currentTimeMillis()-t)+" ms\n");
-
-        readLookupBF();
-
+        testTables();
+        
 
     }
 }

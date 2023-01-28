@@ -2,9 +2,13 @@ import java.util.*;
 import java.io.*;
 
 public class EquatorPrun {
+    public static final byte NOTFOUND = 127;
     public static int[] symReference = new int[37590]; // last 5 bits are the symmetry transformation. all other bits are the depthTable index.
     public static int[] centerTransformTable = new int[8192];
-    public static int[] fullDepthTable = new int[220160];
+    public static byte[] depthTable = new byte[37590];
+    public static byte[] fullDepthTable = new byte[220160];
+
+    static {readLookup();}
 
     private static int combine(int a, int b) {
         int x = Math.max(a, b);
@@ -100,9 +104,8 @@ public class EquatorPrun {
         eFlipInitial.executeStr("F2 L2 R2 B2");
         
         HashSet<EdgeCube> seenCubes = new HashSet<EdgeCube>();
-        int[] depthTable = new int[37590];
         EdgeCube[] cubeTable = new EdgeCube[37590];
-        for (int i=0; i<depthTable.length; i++) depthTable[i] = -1;
+        for (int i=0; i<depthTable.length; i++) depthTable[i] = NOTFOUND;
         seenCubes.add(eInitial);
         seenCubes.add(eFlipInitial);
         depthTable[wingIndex(eInitial)] = 0;
@@ -112,14 +115,14 @@ public class EquatorPrun {
         HashSet<EdgeCube> newCubes;
 
         int nodesReached = 2;
-        for (int i=1; i<=6; i++) {
+        for (byte i=1; i<=6; i++) {
             newCubes = new HashSet<EdgeCube>();
             for (EdgeCube e : seenCubes) {
                 for (int nextI=0; nextI<6; nextI++) {
                     for (int rot=0; rot<3; rot++) {
                         EdgeCube nbr = new EdgeCube(e);
                         nbr.executeMove(nextI, rot);
-                        if (depthTable[wingIndex(nbr)] == -1) {
+                        if (depthTable[wingIndex(nbr)] == NOTFOUND) {
                             newCubes.add(nbr);
                             depthTable[wingIndex(nbr)] = i;
                             cubeTable[wingIndex(nbr)] = nbr;
@@ -127,7 +130,7 @@ public class EquatorPrun {
 
                             // testing
                             int ySym = sym(nbr, 31) >> 8;
-                            if (depthTable[ySym] != -1) {
+                            if (depthTable[ySym] != NOTFOUND) {
                                 if (depthTable[wingIndex(nbr)] != depthTable[ySym]) System.out.println("Error: Symmetries not symmetrical");
                             }
                             // end testing
@@ -200,6 +203,7 @@ public class EquatorPrun {
         eFlipInitial = new EdgeCube(eInitial);
         eFlipInitial.executeStr("F B' L2 R2 F B'");
         
+        for (int i=0; i<fullDepthTable.length; i++) fullDepthTable[i] = NOTFOUND;
         seenCubes = new HashSet<EdgeCube>();
         HashMap<Integer, Integer> seenIndexes = new HashMap<Integer, Integer>();
         seenCubes.add(eInitial);
@@ -213,6 +217,9 @@ public class EquatorPrun {
         eTest.executeStr("F2 L2 R2 B2");
         System.out.println("Test index: "+expandedIndex(eTest));
 
+        fullDepthTable[getFullIndex(eInitial)] = 0;
+        fullDepthTable[getFullIndex(eFlipInitial)] = 0;
+
         for (int i=1; i<=9; i++) {
             newCubes = new HashSet<EdgeCube>();
             for (EdgeCube e : seenCubes) {
@@ -225,7 +232,7 @@ public class EquatorPrun {
                             seenIndexes.put(expandedIndex(nbr), i);
 
                             int fullIndex = getFullIndex(nbr);
-                            if (fullDepthTable[fullIndex] == 0) fullDepthTable[fullIndex] = i;
+                            if (fullDepthTable[fullIndex] == NOTFOUND) fullDepthTable[fullIndex] = (byte)i;
                             // testing
                             // int ySym = sym(nbr, 31);
                             // if (seenIndexes.containsKey(ySym)) {
@@ -275,6 +282,7 @@ public class EquatorPrun {
                 writer.write(symReference[i] & 255);
             }
             for (int i=0; i<8192; i++) writer.write(centerTransformTable[i]);
+            for (int i=0; i<37590; i++) writer.write(depthTable[i]);
             for (int i=0; i<220160; i++) writer.write(fullDepthTable[i]);
             f.close();
         } catch (Exception FileNotFoundException) {
@@ -289,7 +297,8 @@ public class EquatorPrun {
 
             for (int i=0; i<37590; i++) symReference[i] = (reader.read() << 8) + reader.read();
             for (int i=0; i<8192; i++) centerTransformTable[i] = reader.read();
-            for (int i=0; i<220160; i++) fullDepthTable[i] = reader.read();
+            for (int i=0; i<37590; i++) depthTable[i] = (byte)(reader.read());
+            for (int i=0; i<220160; i++) fullDepthTable[i] = (byte)(reader.read());
 
             reader.close();
 
@@ -299,7 +308,7 @@ public class EquatorPrun {
     }
 
     public static void testTables() {
-        String[] sequences = new String[] {"R U R'", "U2 U2", "F2 L2 R2 B2", "F R U R' U'", "R U R' L' U' L R D R' L' D' L", "R U R' F R' F' R F B L2 F' B'", "R U2 R D R D R F B L D' R2 D R"};
+        String[] sequences = new String[] {"R U R'", "U2 U2", "F2 L2 R2 B2", "F R U R' U'", "R U R' L' U' L R D R' L' D' L", "R U R' F R' F' R F B L2 F' B'", "R U2 R D R D R F B L D' R2 D R", "L R' F2 L' R", "L R' F L'"};
 
         for (String seq : sequences) {
             EdgeCube eTest = new EdgeCube();
@@ -308,8 +317,11 @@ public class EquatorPrun {
             System.out.println("\n"+seq);
 
             int fullIndex = getFullIndex(eTest);
+            int edgeIndex = wingIndex(eTest);
             System.out.println("fullIndex: " + fullIndex);
             System.out.println("depth: " + fullDepthTable[fullIndex]);
+            System.out.println("edgeIndex: " + edgeIndex);
+            System.out.println("edgeDepth: " + depthTable[edgeIndex]);
         }
     }
 
@@ -321,7 +333,6 @@ public class EquatorPrun {
         readLookup();
         System.out.println("\n"+(System.currentTimeMillis()-t)+" ms\n");
         testTables();
-        
 
     }
 }

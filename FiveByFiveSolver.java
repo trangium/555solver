@@ -107,7 +107,7 @@ public class FiveByFiveSolver {
 
     public static void edgeCubeSolve() {
         int numScrambles = 25;
-        Random rand = new Random(369817240);
+        Random rand = new Random(369818240);
         final String[] moves = {"U", "D", "R", "L", "F", "B"};
         String[] scrambles = new String[numScrambles];
         for (int i=0; i<numScrambles; i++) {
@@ -158,12 +158,235 @@ public class FiveByFiveSolver {
         System.out.println(" Average time: "+(((int)(totalTime))/1000.0/numScrambles)+"s");
     }
 
+    //  -------------------------------------start of new stuff--------------------------------------
+
+    private static int combine(int a, int b) {
+        int x = Math.max(a, b);
+        return x*(x-3)/2 + a + b;
+    }
+
+    // precondition: EdgeCube e is Uw2 or Dw2 from reduction
+    public static int wingIndex(EdgeCube e) {
+        byte[] cyc = e.getWingCycles();
+        int a = -1;
+        int b = -1;
+        int c = -1;
+        int d = -1;
+        for (int i=0; i<24; i++) {
+            if (cyc[i] != i) {
+                if (a == -1) a = i;
+                else if (cyc[i] == a) b = i;
+                else if (c == -1) c = i;
+                else d = i;
+            }
+        }
+        return combine(combine(a, b), combine(c, d));
+    }
+
+    // precondition: EdgeCube e is Uw2 or Dw2 from reduction
+    public static int centerIndex(EdgeCube e) {
+        int factor = 1;
+        int acc = 0;
+        for (int i=9; i<40; i+=2) {
+            if (e.getCenterPerm()[i] != EdgeCube.centerSolved[i]) {
+                acc += ((i%8)>>1)*factor;
+                factor *= 4;
+            }
+        }
+        return acc;
+    }
+
+    public static int fullIndex(EdgeCube e) {
+        int symData = EquatorPrun.symReference[wingIndex(e)];
+        return ((symData >> 5) << 8) + EquatorPrun.centerTransformTable[centerIndex(e)*32+(symData & 31)];
+    }
+
+    public static void equatorTest() {
+        EdgeCube e = new EdgeCube();
+        e.executeStr("R F R B U D L F Dw2 R U F R'");
+        e.printCycles();
+        System.out.println(fullIndex(e));
+        System.out.println(EquatorPrun.fullDepthTable[fullIndex(e)]);
+    }
+
+// ------------------------------- start of cycles stuff ------------------------------------------------------------
+
+    public static ArrayList<ArrayList<Byte>> permCycles(byte[] wingCycles) {
+        ArrayList<ArrayList<Byte>> cyc = new ArrayList<ArrayList<Byte>>(4);
+        cyc.add(new ArrayList<Byte>(8));
+        cyc.add(new ArrayList<Byte>(6));
+        cyc.add(new ArrayList<Byte>(4));
+        cyc.add(new ArrayList<Byte>(5));
+        
+        ArrayList<Byte> tempCycles = new ArrayList<Byte>(5);
+
+        int needle = 0;
+        while (needle < EdgeCube.numberOfWings) {
+            if (wingCycles[needle] == needle) {
+                needle++;
+                continue;
+            }
+            byte temp = wingCycles[needle];
+            wingCycles[needle] = wingCycles[temp];
+            wingCycles[temp] = temp;
+            tempCycles.add(temp);
+            if (wingCycles[needle] == needle) {
+                tempCycles.add(wingCycles[needle]);
+                for (Byte b : tempCycles) cyc.get(tempCycles.size()-2).add(b);
+                tempCycles.clear();
+                needle++;
+            }
+        }
+
+
+
+        return cyc;
+    }
+
+    public static ArrayList<byte[]> getPossibleSwaps(byte[] wingCycles) {
+        ArrayList<ArrayList<Byte>> cyc = permCycles(wingCycles);
+        int[][][] swapIndices;
+
+        switch (cyc.get(0).size() + cyc.get(1).size()) {
+            case 8:
+                // 2 2 2 2
+                swapIndices = new int[][][]{
+                    {{0, 0}, {0, 1}, {0, 2}, {0, 3}}, 
+                    {{0, 0}, {0, 1}, {0, 4}, {0, 5}},
+                    {{0, 0}, {0, 1}, {0, 6}, {0, 7}},
+                    {{0, 2}, {0, 3}, {0, 4}, {0, 5}},
+                    {{0, 2}, {0, 3}, {0, 6}, {0, 7}},
+                    {{0, 4}, {0, 5}, {0, 6}, {0, 7}},
+                };
+                break;
+            case 7:
+                // 3 2 2
+                swapIndices = new int[][][]{
+                    {{1, 0}, {1, 1}, {0, 0}, {0, 1}}, 
+                    {{1, 0}, {1, 1}, {0, 2}, {0, 3}},
+                    {{1, 1}, {1, 2}, {0, 0}, {0, 1}},
+                    {{1, 1}, {1, 2}, {0, 2}, {0, 3}},
+                    {{1, 0}, {1, 2}, {0, 0}, {0, 1}},
+                    {{1, 0}, {1, 2}, {0, 2}, {0, 3}},
+                };
+                break;
+            case 6:
+                // 3 3
+                swapIndices = new int[][][]{
+                    {{1, 0}, {1, 1}, {1, 3}, {1, 4}},
+                    {{1, 0}, {1, 1}, {1, 3}, {1, 5}},
+                    {{1, 0}, {1, 1}, {1, 4}, {1, 5}},
+                    {{1, 1}, {1, 2}, {1, 3}, {1, 4}},
+                    {{1, 1}, {1, 2}, {1, 3}, {1, 5}},
+                    {{1, 1}, {1, 2}, {1, 4}, {1, 5}},
+                    {{1, 0}, {1, 2}, {1, 3}, {1, 4}},
+                    {{1, 0}, {1, 2}, {1, 3}, {1, 5}},
+                    {{1, 0}, {1, 2}, {1, 4}, {1, 5}},
+                };
+                break;
+            case 4:
+                // 2 2
+                swapIndices = new int[][][]{
+                    {{0, 0}, {0, 1}, {0, 2}, {0, 3}},
+                };
+                break;
+            case 2:
+                // 2 4
+                swapIndices = new int[][][]{
+                    {{0, 0}, {0, 1}, {2, 0}, {2, 2}},
+                    {{0, 0}, {0, 1}, {2, 1}, {2, 3}},
+                    {{2, 0}, {2, 1}, {2, 2}, {2, 3}},
+                    {{2, 0}, {2, 3}, {2, 1}, {2, 2}},
+                };
+                break;
+            case 0:
+                // 5
+                swapIndices = new int[][][]{
+                    {{3, 0}, {3, 1}, {3, 2}, {3, 4}},
+                    {{3, 1}, {3, 2}, {3, 3}, {3, 0}},
+                    {{3, 2}, {3, 3}, {3, 4}, {3, 1}},
+                    {{3, 3}, {3, 4}, {3, 0}, {3, 2}},
+                    {{3, 4}, {3, 0}, {3, 1}, {3, 3}},
+                };
+                break;
+            default:
+                // case 3 - three cycle or more than four swaps; proceed as usual
+                return new ArrayList<byte[]>();
+        }
+
+        ArrayList<byte[]> possibleSwaps = new ArrayList<byte[]>();
+        for (int[][] swap : swapIndices) {
+            byte[] acc = new byte[4];
+            for (int i=0; i<4; i++)
+                acc[i] = cyc.get(swap[i][0]).get(swap[i][1]);
+            possibleSwaps.add(acc);
+        }
+
+        return possibleSwaps;
+    }
+
+    // precondition: e is exactly 2 wide moves from solved
+    public static int minWingDepth(EdgeCube e) {
+        byte[] wingCycles = e.getWingCycles();
+        int[] zRot = {15, 14, 7, 6, 9, 8, 23, 22, 17, 16, 5, 4, 1, 0, 21, 20, 11, 10, 3, 2, 13, 12, 19, 18};
+        int[] xRot = {5, 4, 10, 11, 17, 16, 8, 9, 22, 23, 18, 19, 2, 3, 6, 7, 21, 20, 12, 13, 1, 0, 14, 15};
+        int[] nullRot = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
+        ArrayList<byte[]> possibleSwaps = getPossibleSwaps(wingCycles);
+        ArrayList<int[]> possibleRots = new ArrayList<int[]>(3);
+        int udCtrDist = e.centerDistance(0, 40);
+        int lrCtrDist = e.centerDistance(16, 32);
+        int fbCtrDist = e.centerDistance(8, 24);
+        if (udCtrDist <= 2) possibleRots.add(nullRot);
+        if (lrCtrDist <= 2) possibleRots.add(xRot);
+        if (fbCtrDist <= 2) possibleRots.add(zRot);
+
+        int minFound = 127;
+        for (int[] rot : possibleRots) {
+            for (byte[] b : possibleSwaps) {
+                int edgeIndex = combine(combine(rot[b[0]], rot[b[1]]), combine(rot[b[2]], rot[b[3]]));
+                int depth = EquatorPrun.depthTable[edgeIndex];
+                for (byte b2 : b) {
+                    System.out.print(b2);
+                    System.out.print(" ");  
+                }
+                System.out.println(" => depth " + depth);
+                minFound = Math.min(depth, minFound);
+            }
+        }
+        return minFound;
+    }
+
+    public static void cyclesTest() {
+        EdgeCube e = new EdgeCube();
+        e.executeStr("R F R B U D L F Dw2 R U R' Dw2");
+        e.printCycles();
+
+        for (byte[] bar : getPossibleSwaps(e.getWingCycles())) {
+            for (byte b : bar) {
+                System.out.print(b);
+                System.out.print(" ");  
+            }
+            System.out.println();
+        }
+
+        System.out.println("UD ctr: " + e.centerDistance(0, 40));
+        System.out.println("LR ctr: " + e.centerDistance(8, 24));
+        System.out.println("FB ctr: " + e.centerDistance(16, 32));
+
+        System.out.println("depth: " + minWingDepth(e));
+    }
+
     public static void main(String[] args) {
         // webDemo();
         // edgeCubeSolve();
-        int a = 534;
-        int b = 129;
-        System.out.println((b-a) >>> 31);
+        // equatorTest();
+        cyclesTest();
+
+        /*
+        EdgeCube e = new EdgeCube();
+        e.executeStr("Rw Lw'");
+        e.print();
+        */
     }
       
 }

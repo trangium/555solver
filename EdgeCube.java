@@ -28,23 +28,23 @@ public class EdgeCube extends Cube {
     static final int FDL = 22;
     static final int FL = 23;
 
-    static final int RUF = 24;
-    static final int RU = 25;
-    static final int RUB = 26;
-    static final int RB = 27;
-    static final int RDB = 28;
-    static final int RD = 29;
-    static final int RDF = 30;
-    static final int RF = 31;
+    static final int RDB = 24;
+    static final int RD = 25;
+    static final int RDF = 26;
+    static final int RF = 27;
+    static final int RUF = 28;
+    static final int RU = 29;
+    static final int RUB = 30;
+    static final int RB = 31;
 
-    static final int BUR = 32;
-    static final int BU = 33;
-    static final int BUL = 34;
-    static final int BL = 35;
-    static final int BDL = 36;
-    static final int BD = 37;
-    static final int BDR = 38;
-    static final int BR = 39;
+    static final int BDL = 32;
+    static final int BD = 33;
+    static final int BDR = 34;
+    static final int BR = 35;
+    static final int BUR = 36;
+    static final int BU = 37;
+    static final int BUL = 38;
+    static final int BL = 39;
 
     static final int DFL = 40;
     static final int DF = 41;

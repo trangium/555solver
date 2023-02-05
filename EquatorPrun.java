@@ -3,10 +3,10 @@ import java.io.*;
 
 public class EquatorPrun {
     public static final byte NOTFOUND = 127;
-    public static int[] symReference = new int[37590]; // last 5 bits are the symmetry transformation. all other bits are the depthTable index.
+    public static int[] symReference = new int[37906]; // last 5 bits are the symmetry transformation. all other bits are the depthTable index.
     public static int[] centerTransformTable = new int[8192];
-    public static byte[] depthTable = new byte[37590];
-    public static byte[] fullDepthTable = new byte[220160];
+    public static byte[] depthTable = new byte[37906];
+    public static byte[] fullDepthTable = new byte[220416];
 
     static {readLookup();}
 
@@ -104,7 +104,7 @@ public class EquatorPrun {
         eFlipInitial.executeStr("F2 L2 R2 B2");
         
         HashSet<EdgeCube> seenCubes = new HashSet<EdgeCube>();
-        EdgeCube[] cubeTable = new EdgeCube[37590];
+        EdgeCube[] cubeTable = new EdgeCube[37906];
         for (int i=0; i<depthTable.length; i++) depthTable[i] = NOTFOUND;
         seenCubes.add(eInitial);
         seenCubes.add(eFlipInitial);
@@ -145,14 +145,15 @@ public class EquatorPrun {
             System.out.println("Depth "+i+": "+nodesReached);
         }
 
-        int[] symDepthTable = new int[860];
+        int[] symDepthTable = new int[861];
         HashSet<Integer> seenLows = new HashSet<Integer>();
-        int count = 0;
+        int count = 1;
 
-        for (int i=0; i<37590; i++) {
+        for (int i=0; i<37906; i++) {
+            symReference[i] = 0;
             EdgeCube e = cubeTable[i];
             if (e == null) continue;
-            int lowestSoFar = 37591;
+            int lowestSoFar = 37907;
             int lowSymId = -1;
             for (int symId=0; symId<32; symId++) {
                 int newId = sym(e, symId) >> 8;
@@ -277,13 +278,13 @@ public class EquatorPrun {
             FileOutputStream f = new FileOutputStream("equator.prun");
             BufferedOutputStream writer = new BufferedOutputStream(f);
             
-            for (int i=0; i<37590; i++) {
+            for (int i=0; i<37906; i++) {
                 writer.write(symReference[i] >> 8);
                 writer.write(symReference[i] & 255);
             }
             for (int i=0; i<8192; i++) writer.write(centerTransformTable[i]);
-            for (int i=0; i<37590; i++) writer.write(depthTable[i]);
-            for (int i=0; i<220160; i++) writer.write(fullDepthTable[i]);
+            for (int i=0; i<37906; i++) writer.write(depthTable[i]);
+            for (int i=0; i<220416; i++) writer.write(fullDepthTable[i]);
             writer.close();
             f.close();
         } catch (Exception FileNotFoundException) {
@@ -296,10 +297,10 @@ public class EquatorPrun {
             FileInputStream f = new FileInputStream("equator.prun");
             BufferedInputStream reader = new BufferedInputStream(f);
 
-            for (int i=0; i<37590; i++) symReference[i] = (reader.read() << 8) + reader.read();
+            for (int i=0; i<37906; i++) symReference[i] = (reader.read() << 8) + reader.read();
             for (int i=0; i<8192; i++) centerTransformTable[i] = reader.read();
-            for (int i=0; i<37590; i++) depthTable[i] = (byte)(reader.read());
-            for (int i=0; i<220160; i++) fullDepthTable[i] = (byte)(reader.read());
+            for (int i=0; i<37906; i++) depthTable[i] = (byte)(reader.read());
+            for (int i=0; i<220416; i++) fullDepthTable[i] = (byte)(reader.read());
 
             reader.close();
 
@@ -328,11 +329,11 @@ public class EquatorPrun {
 
     public static void main(String[] args) {
         
-        // fullbfs();
-        // writeToFile();
+        fullbfs();
+        writeToFile();
 
         // double t = System.currentTimeMillis();
-        // readLookup();
+        readLookup();
         // System.out.println("\n"+(System.currentTimeMillis()-t)+" ms\n");
         testTables();
         

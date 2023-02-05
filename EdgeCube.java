@@ -206,7 +206,7 @@ public class EdgeCube extends Cube {
                         nbr.swap(UR, LF);
                         nbr.swap(UFR, LDF);
                         if (depths.get(nbr) == 0) possibleAUF0.add(u + 4*l);
-                        if (depths.get(nbr) == 1 || depths.get(nbr) == 2) possibleAUF1.add(4*u+l);
+                        if (depths.get(nbr) == 1 || depths.get(nbr) == 2) possibleAUF1.add(u + 4*l);
                     }
                 }
                 ctrDist0Prun.put(ctrId, possibleAUF0);
@@ -295,15 +295,15 @@ public class EdgeCube extends Cube {
     }
 
     public boolean isSolved() { 
-        byte[] wingCycles = getWingCycles();
-        int wing_h = flipCount(wingCycles) + swapCount(wingCycles);
-        int ctr_1 = (centerDistance(0, 40)+1)/2;
-        int ctr_2 = (centerDistance(8, 24)+1)/2;
-        int ctr_3 = (centerDistance(16, 32)+1)/2;
-        final int wingMax = 4;
-        final int cMax = 2;
-        final int cSumMax = 4; 
-        return (wing_h <= wingMax && ctr_1 <= cMax && ctr_2 <= cMax && ctr_3 <= cMax && (ctr_1 + ctr_2 + ctr_3) <= cSumMax);
+        for (int i=0; i<centerSolved.length; i++) {
+            if (centerPerm[i] != centerSolved[i]) return false;
+        }
+        byte i=0;
+        for (byte val : this.getWingCycles()) {
+            if (val != i) return false;
+            i++;
+        }
+        return true;
     }
 
     private void cycle(byte[] pieceArr, int[] positions, int amount, boolean flip) { 
@@ -473,6 +473,7 @@ public class EdgeCube extends Cube {
         return cyc;
     }
 
+    // precondition: wings are not solved
     public ArrayList<byte[]> getPossibleSwaps(byte[] wingCycles) {
         ArrayList<ArrayList<Byte>> cyc = permCycles(wingCycles);
         int[][][] swapIndices;
@@ -561,35 +562,98 @@ public class EdgeCube extends Cube {
         return x*(x-3)/2 + a + b;
     }
 
-    // precondition: e is exactly 2 wide moves from solved
-    public int minWingDepth() {
-        byte[] wingCycles = getWingCycles();
-        ArrayList<byte[]> possibleSwaps = getPossibleSwaps(wingCycles);
-        ArrayList<int[]> possibleRots = new ArrayList<int[]>(3);
-        int udCtrDist = centerDistance(0, 40);
-        int lrCtrDist = centerDistance(16, 32);
-        int fbCtrDist = centerDistance(8, 24);
-        if (udCtrDist <= 2) possibleRots.add(nullRot);
-        if (lrCtrDist <= 2) possibleRots.add(xRot);
-        if (fbCtrDist <= 2) possibleRots.add(zRot);
+    private static int fullIndex(int wingIdx, int centerIdx) {
+        int symData = EquatorPrun.symReference[wingIdx];
+        if (((symData >> 5) << 8) + EquatorPrun.centerTransformTable[centerIdx*32+(symData & 31)] == 299325) {
 
-        int minFound = 127;
-        for (int[] rot : possibleRots) {
-            for (byte[] b : possibleSwaps) {
-                int edgeIndex = combine(combine(rot[b[0]], rot[b[1]]), combine(rot[b[2]], rot[b[3]]));
-                if (edgeIndex < 37590) { // delete this condition
-                    int depth = EquatorPrun.depthTable[edgeIndex];
-                    minFound = Math.min(depth, minFound);
+            System.out.println(wingIdx);
+            System.out.println(EquatorPrun.symReference[0]);
+            System.out.println(centerIdx);
+        }
+        return ((symData >> 5) << 8) + EquatorPrun.centerTransformTable[centerIdx*32+(symData & 31)];
+    }
+
+    public int getMinDepthCyc(byte[] cycle, int targetDistSum) {
+        int[] prunToCtrIdx = new int[]{51, 50, 49, 48, 35, 34, 33, 32, 19, 18, 17, 16, 3, 2, 1, 0};
+        int[] prunToCtrIdxShift = new int[]{32, 35, 34, 33, 16, 19, 18, 17, 0, 3, 2, 1, 48, 51, 50, 49};
+        int[] prunToCtrIdxDoubleShift = new int[]{17, 16, 19, 18, 1, 0, 3, 2, 49, 48, 51, 50, 33, 32, 35, 34};
+
+        int udCtrDist = (centerDistance(0, 40)+1)/2;
+        int lrCtrDist = (centerDistance(8, 24)+1)/2;
+        int fbCtrDist = (centerDistance(16, 32)+1)/2;
+
+        int minDepth = EquatorPrun.NOTFOUND;
+        // the nullRots are completely unnecessary and are there to show what the code would be like for fb and lr
+        int udEdgeIndex = combine(combine(EdgeCube.nullRot[cycle[0]], EdgeCube.nullRot[cycle[1]]), combine(EdgeCube.nullRot[cycle[2]], EdgeCube.nullRot[cycle[3]]));
+        int lrEdgeIndex = combine(combine(EdgeCube.zRot[cycle[0]], EdgeCube.zRot[cycle[1]]), combine(EdgeCube.zRot[cycle[2]], EdgeCube.zRot[cycle[3]]));
+        int fbEdgeIndex = combine(combine(EdgeCube.xRot[cycle[0]], EdgeCube.xRot[cycle[1]]), combine(EdgeCube.xRot[cycle[2]], EdgeCube.xRot[cycle[3]]));
+        
+        for (int lrMoves=0; lrMoves <= 1; lrMoves++) {
+            int fbMoves = targetDistSum - lrMoves - udCtrDist;
+            if (fbMoves < 0 || fbMoves > 1 || udCtrDist > 1) continue;
+            HashSet<Integer> lrAdjust = EdgeCube.ctrDistPrun.get(lrMoves).get(centerID(8, 24));
+            HashSet<Integer> fbAdjust = EdgeCube.ctrDistPrun.get(fbMoves).get(centerID(16, 32));
+            if (lrAdjust.size() * fbAdjust.size() >= 256) {
+                minDepth = Math.min(minDepth, EquatorPrun.depthTable[udEdgeIndex]);
+                continue;
+            }
+            for (int lr1 : lrAdjust) {
+                for (int fb1 : fbAdjust) {
+                    int centerIdx = prunToCtrIdxShift[lr1] + 4*prunToCtrIdxShift[fb1];
+                    minDepth = Math.min(minDepth, EquatorPrun.fullDepthTable[fullIndex(udEdgeIndex, centerIdx)]);
                 }
             }
         }
-        return minFound;
+
+        for (int udMoves=0; udMoves <= 1; udMoves++) {
+            int fbMoves = targetDistSum - udMoves - lrCtrDist;
+            if (fbMoves < 0 || fbMoves > 1 || lrCtrDist > 1) continue;
+            HashSet<Integer> udAdjust = EdgeCube.ctrDistPrun.get(udMoves).get(centerID(0, 40));
+            HashSet<Integer> fbAdjust = EdgeCube.ctrDistPrun.get(fbMoves).get(centerID(16, 32));
+            if (udAdjust.size() * fbAdjust.size() >= 256) {
+                minDepth = Math.min(minDepth, EquatorPrun.depthTable[lrEdgeIndex]);
+                continue;
+            }
+            for (int ud1 : udAdjust) {
+                for (int fb1 : fbAdjust) {
+                    int centerIdx = prunToCtrIdx[ud1] + 4*prunToCtrIdx[fb1];
+                    minDepth = Math.min(minDepth, EquatorPrun.fullDepthTable[fullIndex(lrEdgeIndex, centerIdx)]);
+                }
+            }
+        }
+
+        for (int udMoves=0; udMoves <= 1; udMoves++) {
+            int lrMoves = targetDistSum - udMoves - fbCtrDist;
+            if (lrMoves < 0 || lrMoves > 1 || fbCtrDist > 1) continue;
+            HashSet<Integer> udAdjust = EdgeCube.ctrDistPrun.get(udMoves).get(centerID(0, 40));
+            HashSet<Integer> lrAdjust = EdgeCube.ctrDistPrun.get(lrMoves).get(centerID(8, 24));
+            if (udAdjust.size() * lrAdjust.size() >= 256) {
+                minDepth = Math.min(minDepth, EquatorPrun.depthTable[fbEdgeIndex]);
+                continue;
+            }
+            for (int ud1 : udAdjust) {
+                for (int lr1 : lrAdjust) {
+                    int centerIdx = prunToCtrIdxDoubleShift[lr1] + 4*prunToCtrIdxShift[ud1];
+                    minDepth = Math.min(minDepth, EquatorPrun.fullDepthTable[fullIndex(fbEdgeIndex, centerIdx)]);
+                }
+            }
+        }
+
+        return minDepth;
     }
+
+    public int getMinDepth(int targetDistSum) {
+        int minDepth = EquatorPrun.NOTFOUND;
+        for (byte[] swaps : getPossibleSwaps(getWingCycles()))
+            minDepth = Math.min(minDepth, getMinDepthCyc(swaps, targetDistSum));
+        return minDepth;
+    }
+
 
     // end of new stuff ------------------------------------------------------------------------------------
 
     public double scaleHeuristic(double x) {
-        if (x <= 6) return 3*x;
+        if (x <= 6) return 3*x + 3;
         if (x <= 8) return scaleHeuristic(6) + 2.5*(x-6);
         if (x <= 10) return scaleHeuristic(8) + 2*(x-8);
         if (x <= 12) return scaleHeuristic(10) + 1.5*(x-10);
@@ -611,6 +675,12 @@ public class EdgeCube extends Cube {
             double h_max = Math.max(ctr_h * 0.5, wing_h);
             return (scaleHeuristic(h_max));
         }
-        return 5.5 + Math.max(Math.min(9, minWingDepth()), ctr_1 + ctr_2 + ctr_3 - 6.5);
+
+        if (wingSwaps == 0) {
+            return 6 + ctr_1 + ctr_2 + ctr_3;
+        }
+
+        int targetDistSum = ((ctr_1+1)/2 + (ctr_2+1)/2 + (ctr_3+1)/2 == 2 && Math.max(Math.max((ctr_1+1)/2, (ctr_2+1)/2), (ctr_3+1)/2) == 1) && wingSwaps == 2 ? 0 : 1;
+        return Math.min(10, getMinDepth(targetDistSum * 2)) + 8 * targetDistSum;
     }
 }

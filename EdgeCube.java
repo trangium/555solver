@@ -154,7 +154,13 @@ public class EdgeCube extends Cube {
     public static final int numberOfCenters = centerSolved.length;
     public static final int numberOfWings = wingSolved.length;
     public static final int numberOfMidges = midgeSolved.length;
+    public static final int[] zRot = {15, 14, 7, 6, 9, 8, 23, 22, 17, 16, 5, 4, 1, 0, 21, 20, 11, 10, 3, 2, 13, 12, 19, 18};
+    public static final int[] xRot = {5, 4, 10, 11, 17, 16, 8, 9, 22, 23, 18, 19, 2, 3, 6, 7, 21, 20, 12, 13, 1, 0, 14, 15};
+    public static final int[] nullRot = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
     public static final HashMap<Integer, Integer> htrCenterPrun;
+    public static final HashMap<Integer, HashSet<Integer>> dist0Prun;
+    public static final HashMap<Integer, HashSet<Integer>> dist1Prun;
+    public static final ArrayList<HashMap<Integer, HashSet<Integer>>> ctrDistPrun;
 
     static {
         CenterCube pzl = new CenterCube();
@@ -166,9 +172,9 @@ public class EdgeCube extends Cube {
                 for (int u=0; u<4; u++) {
                     for (int l=0; l<4; l++) {
                         CenterCube nbr = new CenterCube(node);
-                        nbr.swap(2, 10);
-                        nbr.swap(3, 11);
-                        nbr.swap(4, 12);
+                        nbr.swap(UBR, LUF);
+                        nbr.swap(UR, LF);
+                        nbr.swap(UFR, LDF);
                         if (u!=3) nbr.executeMove(0, u);
                         if (l!=3) nbr.executeMove(4, l);
                         boolean align = (u==3 && l==3) || (u==2-l);
@@ -179,6 +185,8 @@ public class EdgeCube extends Cube {
             }
         }
         HashMap<Integer, Integer> centerPrun = new HashMap<Integer, Integer>();
+        HashMap<Integer, HashSet<Integer>> ctrDist0Prun = new HashMap<Integer, HashSet<Integer>>();
+        HashMap<Integer, HashSet<Integer>> ctrDist1Prun = new HashMap<Integer, HashSet<Integer>>();
         for (CenterCube node : depths.keySet()) {
             int ctrId = 0;
             for (int i=0; i<16; i++) {
@@ -186,8 +194,31 @@ public class EdgeCube extends Cube {
                 ctrId += node.getPerm()[i];
             }
             centerPrun.put(ctrId, depths.get(node));
+            if (depths.get(node) <= 4) {
+                HashSet<Integer> possibleAUF0 = new HashSet<Integer>();
+                HashSet<Integer> possibleAUF1 = new HashSet<Integer>();
+                for (int u=0; u<4; u++) {
+                    for (int l=0; l<4; l++) {
+                        CenterCube nbr = new CenterCube(node);
+                        if (u != 3) nbr.executeMove(0, u);
+                        if (l != 3) nbr.executeMove(4, l);
+                        nbr.swap(UBR, LUF);
+                        nbr.swap(UR, LF);
+                        nbr.swap(UFR, LDF);
+                        if (depths.get(nbr) == 0) possibleAUF0.add(u + 4*l);
+                        if (depths.get(nbr) == 1 || depths.get(nbr) == 2) possibleAUF1.add(4*u+l);
+                    }
+                }
+                ctrDist0Prun.put(ctrId, possibleAUF0);
+                ctrDist1Prun.put(ctrId, possibleAUF1);
+            }
         }
         htrCenterPrun = new HashMap<Integer, Integer>(centerPrun);
+        dist0Prun = new HashMap<Integer, HashSet<Integer>>(ctrDist0Prun);
+        dist1Prun = new HashMap<Integer, HashSet<Integer>>(ctrDist1Prun);
+        ctrDistPrun = new ArrayList<HashMap<Integer, HashSet<Integer>>>(2);
+        ctrDistPrun.add(dist0Prun);
+        ctrDistPrun.add(dist1Prun);
     }
 
     public EdgeCube() {
@@ -394,6 +425,11 @@ public class EdgeCube extends Cube {
     }
 
     public int centerDistance(int index1, int index2) {
+        int ctrId = centerID(index1, index2);
+        return htrCenterPrun.get(ctrId);
+    }
+
+    public int centerID(int index1, int index2) {
         int ctrId = 0;
         for (int i=index1; i<index1+8; i++) {
             ctrId *= 2;
@@ -403,8 +439,154 @@ public class EdgeCube extends Cube {
             ctrId *= 2;
             ctrId += (centerPerm[i] == centerSolved[index1]) ? 0 : 1;
         }
-        return EdgeCube.htrCenterPrun.get(ctrId);
+        return ctrId;
     }
+
+    // start of new stuff -----------------------------------------------------------------------------------
+
+    public ArrayList<ArrayList<Byte>> permCycles(byte[] wingCycles) {
+        ArrayList<ArrayList<Byte>> cyc = new ArrayList<ArrayList<Byte>>(4);
+        cyc.add(new ArrayList<Byte>(8));
+        cyc.add(new ArrayList<Byte>(6));
+        cyc.add(new ArrayList<Byte>(4));
+        cyc.add(new ArrayList<Byte>(5));
+        
+        ArrayList<Byte> tempCycles = new ArrayList<Byte>(5);
+
+        int needle = 0;
+        while (needle < numberOfWings) {
+            if (wingCycles[needle] == needle) {
+                needle++;
+                continue;
+            }
+            byte temp = wingCycles[needle];
+            wingCycles[needle] = wingCycles[temp];
+            wingCycles[temp] = temp;
+            tempCycles.add(temp);
+            if (wingCycles[needle] == needle) {
+                tempCycles.add(wingCycles[needle]);
+                for (Byte b : tempCycles) cyc.get(tempCycles.size()-2).add(b);
+                tempCycles.clear();
+                needle++;
+            }
+        }
+        return cyc;
+    }
+
+    public ArrayList<byte[]> getPossibleSwaps(byte[] wingCycles) {
+        ArrayList<ArrayList<Byte>> cyc = permCycles(wingCycles);
+        int[][][] swapIndices;
+
+        switch (cyc.get(0).size() + cyc.get(1).size()) {
+            case 8:
+                // 2 2 2 2
+                swapIndices = new int[][][]{
+                    {{0, 0}, {0, 1}, {0, 2}, {0, 3}}, 
+                    {{0, 0}, {0, 1}, {0, 4}, {0, 5}},
+                    {{0, 0}, {0, 1}, {0, 6}, {0, 7}},
+                    {{0, 2}, {0, 3}, {0, 4}, {0, 5}},
+                    {{0, 2}, {0, 3}, {0, 6}, {0, 7}},
+                    {{0, 4}, {0, 5}, {0, 6}, {0, 7}},
+                };
+                break;
+            case 7:
+                // 3 2 2
+                swapIndices = new int[][][]{
+                    {{1, 0}, {1, 1}, {0, 0}, {0, 1}}, 
+                    {{1, 0}, {1, 1}, {0, 2}, {0, 3}},
+                    {{1, 1}, {1, 2}, {0, 0}, {0, 1}},
+                    {{1, 1}, {1, 2}, {0, 2}, {0, 3}},
+                    {{1, 0}, {1, 2}, {0, 0}, {0, 1}},
+                    {{1, 0}, {1, 2}, {0, 2}, {0, 3}},
+                };
+                break;
+            case 6:
+                // 3 3
+                swapIndices = new int[][][]{
+                    {{1, 0}, {1, 1}, {1, 3}, {1, 4}},
+                    {{1, 0}, {1, 1}, {1, 3}, {1, 5}},
+                    {{1, 0}, {1, 1}, {1, 4}, {1, 5}},
+                    {{1, 1}, {1, 2}, {1, 3}, {1, 4}},
+                    {{1, 1}, {1, 2}, {1, 3}, {1, 5}},
+                    {{1, 1}, {1, 2}, {1, 4}, {1, 5}},
+                    {{1, 0}, {1, 2}, {1, 3}, {1, 4}},
+                    {{1, 0}, {1, 2}, {1, 3}, {1, 5}},
+                    {{1, 0}, {1, 2}, {1, 4}, {1, 5}},
+                };
+                break;
+            case 4:
+                // 2 2
+                swapIndices = new int[][][]{
+                    {{0, 0}, {0, 1}, {0, 2}, {0, 3}},
+                };
+                break;
+            case 2:
+                // 2 4
+                swapIndices = new int[][][]{
+                    {{0, 0}, {0, 1}, {2, 0}, {2, 2}},
+                    {{0, 0}, {0, 1}, {2, 1}, {2, 3}},
+                    {{2, 0}, {2, 1}, {2, 2}, {2, 3}},
+                    {{2, 0}, {2, 3}, {2, 1}, {2, 2}},
+                };
+                break;
+            case 0:
+                // 5
+                swapIndices = new int[][][]{
+                    {{3, 0}, {3, 1}, {3, 2}, {3, 4}},
+                    {{3, 1}, {3, 2}, {3, 3}, {3, 0}},
+                    {{3, 2}, {3, 3}, {3, 4}, {3, 1}},
+                    {{3, 3}, {3, 4}, {3, 0}, {3, 2}},
+                    {{3, 4}, {3, 0}, {3, 1}, {3, 3}},
+                };
+                break;
+            default:
+                // case 3 - three cycle or more than four swaps; proceed as usual
+                return new ArrayList<byte[]>();
+        }
+
+        ArrayList<byte[]> possibleSwaps = new ArrayList<byte[]>();
+        for (int[][] swap : swapIndices) {
+            byte[] acc = new byte[4];
+            for (int i=0; i<4; i++) {
+                acc[i] = cyc.get(swap[i][0]).get(swap[i][1]);
+            }
+            possibleSwaps.add(acc);
+        }
+
+        return possibleSwaps;
+    }
+
+    private static int combine(int a, int b) {
+        int x = Math.max(a, b);
+        return x*(x-3)/2 + a + b;
+    }
+
+    // precondition: e is exactly 2 wide moves from solved
+    public int minWingDepth() {
+        byte[] wingCycles = getWingCycles();
+        ArrayList<byte[]> possibleSwaps = getPossibleSwaps(wingCycles);
+        ArrayList<int[]> possibleRots = new ArrayList<int[]>(3);
+        int udCtrDist = centerDistance(0, 40);
+        int lrCtrDist = centerDistance(16, 32);
+        int fbCtrDist = centerDistance(8, 24);
+        if (udCtrDist <= 2) possibleRots.add(nullRot);
+        if (lrCtrDist <= 2) possibleRots.add(xRot);
+        if (fbCtrDist <= 2) possibleRots.add(zRot);
+
+        int minFound = 127;
+        for (int[] rot : possibleRots) {
+            for (byte[] b : possibleSwaps) {
+                int edgeIndex = combine(combine(rot[b[0]], rot[b[1]]), combine(rot[b[2]], rot[b[3]]));
+                if (edgeIndex < 37590) { // delete this condition
+                    int depth = EquatorPrun.depthTable[edgeIndex];
+                    minFound = Math.min(depth, minFound);
+                }
+            }
+        }
+        return minFound;
+    }
+
+    // end of new stuff ------------------------------------------------------------------------------------
 
     public double scaleHeuristic(double x) {
         if (x <= 6) return 3*x;
@@ -417,9 +599,18 @@ public class EdgeCube extends Cube {
     public double h() {
         if (isSolved()) return 0;
         byte[] wingCycles = getWingCycles();
-        int wing_h = flipCount(wingCycles) + swapCount(wingCycles);
-        int ctr_h = centerDistance(0, 40) + centerDistance(8, 24) + centerDistance(16, 32);
-        double h_max = Math.max(ctr_h * 0.5, wing_h);
-        return (int)(scaleHeuristic(h_max));
+        int wingSwaps = swapCount(wingCycles);
+        int wingFlips = flipCount(wingCycles);
+        int ctr_1 = centerDistance(0, 40);
+        int ctr_2 = centerDistance(8, 24);
+        int ctr_3 = centerDistance(16, 32);
+
+        if ((wingFlips + wingSwaps) >= 5 || ctr_1 >= 5 || ctr_2 >= 5 || ctr_3 >= 5 || (ctr_1+1)/2+(ctr_2+1)/2+(ctr_3+1)/2 >= 5) {
+            int wing_h = wingFlips + wingSwaps;
+            int ctr_h = ctr_1 + ctr_2 + ctr_3;
+            double h_max = Math.max(ctr_h * 0.5, wing_h);
+            return (scaleHeuristic(h_max));
+        }
+        return 5.5 + Math.max(Math.min(9, minWingDepth()), ctr_1 + ctr_2 + ctr_3 - 6.5);
     }
 }

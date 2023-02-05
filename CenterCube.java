@@ -124,7 +124,7 @@ public class CenterCube extends Cube {
         assert positions.length == 4;
         byte temp;
         switch (amount) {
-            case 2: // clockwise
+            case 2: // inverse
                 temp = perm[positions[0]];
                 perm[positions[0]] = perm[positions[1]];
                 perm[positions[1]] = perm[positions[2]];
@@ -139,7 +139,7 @@ public class CenterCube extends Cube {
                 perm[positions[1]] = perm[positions[3]];
                 perm[positions[3]] = temp;
                 return;
-            case 0: // inverse
+            case 0: // clockwise
                 temp = perm[positions[0]];
                 perm[positions[0]] = perm[positions[3]];
                 perm[positions[3]] = perm[positions[2]];

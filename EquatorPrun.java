@@ -37,7 +37,7 @@ public class EquatorPrun {
         int acc = 0;
         for (int i=9; i<40; i+=2) {
             if (e.getCenterPerm()[i] != EdgeCube.centerSolved[i]) {
-                acc += ((i%8)>>1)*factor;
+                acc += (((i>=24 ? i+4 : i)%8)>>1)*factor;
                 factor *= 4;
             }
         }
@@ -259,7 +259,7 @@ public class EquatorPrun {
         return edgeBaseID * 256 + centerID
          */
 
-        String[] sequences = new String[] {"R U R'", "U2 U2", "F2 L2 R2 B2", "F R U R' U'", "R U R' L' U' L R D R' L' D' L", "R U R' F R' F' R F B L2 F' B'", "R U2 R D R D R F B L D' R2 D R"};
+        String[] sequences = new String[] {"R U R'", "U2 U2", "F2 L2 R2 B2", "F R U R' U'", "R U R' L' U' L R D R' L' D' L", "R U R' F R' F' R F B L2 F' B'", "R U2 R D R D R F B L D' R2 D R", "B2 L B2 F"};
 
         for (String seq : sequences) {
             eTest = new EdgeCube(eInitial);
@@ -274,8 +274,8 @@ public class EquatorPrun {
 
     public static void writeToFile() {
         try {
-            FileWriter f = new FileWriter("equator.prun");
-            BufferedWriter writer = new BufferedWriter(f);
+            FileOutputStream f = new FileOutputStream("equator.prun");
+            BufferedOutputStream writer = new BufferedOutputStream(f);
             
             for (int i=0; i<37590; i++) {
                 writer.write(symReference[i] >> 8);
@@ -284,6 +284,7 @@ public class EquatorPrun {
             for (int i=0; i<8192; i++) writer.write(centerTransformTable[i]);
             for (int i=0; i<37590; i++) writer.write(depthTable[i]);
             for (int i=0; i<220160; i++) writer.write(fullDepthTable[i]);
+            writer.close();
             f.close();
         } catch (Exception FileNotFoundException) {
             System.out.println("File equator.prun does not exist");
@@ -292,8 +293,8 @@ public class EquatorPrun {
 
     public static void readLookup() {
         try {
-            FileReader f = new FileReader("equator.prun");
-            BufferedReader reader = new BufferedReader(f);
+            FileInputStream f = new FileInputStream("equator.prun");
+            BufferedInputStream reader = new BufferedInputStream(f);
 
             for (int i=0; i<37590; i++) symReference[i] = (reader.read() << 8) + reader.read();
             for (int i=0; i<8192; i++) centerTransformTable[i] = reader.read();
@@ -308,7 +309,7 @@ public class EquatorPrun {
     }
 
     public static void testTables() {
-        String[] sequences = new String[] {"R U R'", "U2 U2", "F2 L2 R2 B2", "F R U R' U'", "R U R' L' U' L R D R' L' D' L", "R U R' F R' F' R F B L2 F' B'", "R U2 R D R D R F B L D' R2 D R", "L R' F2 L' R", "L R' F L'"};
+        String[] sequences = new String[] {"R U R'", "U2 U2", "F2 L2 R2 B2", "F R U R' U' F'", "R U R' L' U' L R D R' L' D' L", "R U R' F R' F' R F B L2 F' B'", "R U2 R D R D R F B L D' R2 D R", "L R' F2 L' R", "L R' F L'", "B2 L B2 F"};
 
         for (String seq : sequences) {
             EdgeCube eTest = new EdgeCube();
@@ -326,13 +327,19 @@ public class EquatorPrun {
     }
 
     public static void main(String[] args) {
+        
         // fullbfs();
         // writeToFile();
+        EdgeCube blbf = new EdgeCube();
+        blbf.executeStr("Uw2 B2 L B2 F");
+        System.out.println(getFullIndex(blbf));
 
         double t = System.currentTimeMillis();
         readLookup();
         System.out.println("\n"+(System.currentTimeMillis()-t)+" ms\n");
         testTables();
+        
+
 
     }
 }

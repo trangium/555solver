@@ -330,13 +330,10 @@ public class EquatorPrun {
         
         // fullbfs();
         // writeToFile();
-        EdgeCube blbf = new EdgeCube();
-        blbf.executeStr("Uw2 B2 L B2 F");
-        System.out.println(getFullIndex(blbf));
 
-        double t = System.currentTimeMillis();
-        readLookup();
-        System.out.println("\n"+(System.currentTimeMillis()-t)+" ms\n");
+        // double t = System.currentTimeMillis();
+        // readLookup();
+        // System.out.println("\n"+(System.currentTimeMillis()-t)+" ms\n");
         testTables();
         
 

@@ -88,7 +88,7 @@ public class FiveByFiveSolver {
     }
 
     public static void webDemo() {
-        String setup = "L Dw Fw2 Bw R2 Dw' B' Bw' Fw' R F Lw2 Uw' B2 U' Bw' B R2 L2 Rw F2 Fw' D Lw' Uw' Dw2 U2 Fw2 B' F L' Rw B Fw Rw2 F2 B U2 Rw2 Uw D L' Rw2 Fw2 Rw R2 Dw2 Lw B2 L2 Dw' Bw2 D' Rw Lw2 Dw' U R2 F2 U'";
+        String setup = "D2 F2 Dw' B' U' Bw F' U2 R2 L2 Uw L2 D' Uw2 L2 Rw Fw2 L Uw' Lw2 Fw2 B2 D' Bw' U' R2 L Bw Lw R2 Bw R Bw B2 F Uw' Bw2 Rw' B' F' Fw D' Bw' U R' F2 Rw Dw Uw2 Lw' L' B2 R' Dw U' Uw' B2 Fw' L' U2 D' Dw Rw' Dw2 Bw2 Fw Rw2 D Uw' Fw2 Bw2 Uw L' Rw D R2 U Rw2 Dw2 Uw D Lw R2 B Rw2 R Fw D2 L' R2 Rw2 D' F L Uw U R' B U2 Dw2 L' Lw' Dw U' F L Uw2 B2 F2 Dw' Bw' D2 L2 Bw' L Bw' Fw L Rw Uw L Dw Fw2 Bw R2 Dw' B' Bw' Fw' R F Lw2 Uw' B2 U' Bw' B R2 L2 Rw F2 Fw' D Lw' Uw' Dw2 U2 Fw2 B' F L' Rw B Fw Rw2 F2 B U2 Rw2 Uw D L' Rw2 Fw2 Rw R2 Dw2 Lw B2 L2 Dw' Bw2 D' Rw Lw2 Dw' U R2 F2 U'";
         CenterCube pzl = new CenterCube();
         pzl.executeStr(setup);
         String centerSol = rbfs(pzl);
@@ -242,8 +242,8 @@ public class FiveByFiveSolver {
     }
 
     public static void main(String[] args) {
-        // webDemo();
-        edgeCubeSolve();
+        webDemo();
+        // edgeCubeSolve();
         // equatorTest();
         // cyclesTest();
 

@@ -653,7 +653,7 @@ public class EdgeCube extends Cube {
     // end of new stuff ------------------------------------------------------------------------------------
 
     public double scaleHeuristic(double x) {
-        if (x <= 6) return 3*x + 3;
+        if (x <= 6) return 3*x + 1.5;
         if (x <= 8) return scaleHeuristic(6) + 2.5*(x-6);
         if (x <= 10) return scaleHeuristic(8) + 2*(x-8);
         if (x <= 12) return scaleHeuristic(10) + 1.5*(x-10);
@@ -669,18 +669,16 @@ public class EdgeCube extends Cube {
         int ctr_2 = centerDistance(8, 24);
         int ctr_3 = centerDistance(16, 32);
 
-        if ((wingFlips + wingSwaps) >= 5 || ctr_1 >= 5 || ctr_2 >= 5 || ctr_3 >= 5 || (ctr_1+1)/2+(ctr_2+1)/2+(ctr_3+1)/2 >= 5) {
+        if (wingSwaps >= 5 || ctr_1 >= 5 || ctr_2 >= 5 || ctr_3 >= 5 || (ctr_1+1)/2+(ctr_2+1)/2+(ctr_3+1)/2 >= 5) {
             int wing_h = wingFlips + wingSwaps;
             int ctr_h = ctr_1 + ctr_2 + ctr_3;
             double h_max = Math.max(ctr_h * 0.5, wing_h);
             return (scaleHeuristic(h_max));
         }
 
-        if (wingSwaps == 0) {
-            return 6 + ctr_1 + ctr_2 + ctr_3;
-        }
+        if (wingSwaps == 0) return 6 + ctr_1 + ctr_2 + ctr_3;
 
         int targetDistSum = ((ctr_1+1)/2 + (ctr_2+1)/2 + (ctr_3+1)/2 == 2 && Math.max(Math.max((ctr_1+1)/2, (ctr_2+1)/2), (ctr_3+1)/2) == 1) && wingSwaps == 2 ? 0 : 1;
-        return Math.min(10, getMinDepth(targetDistSum * 2)) + 8 * targetDistSum;
+        return Math.min(11, getMinDepth(targetDistSum * 2)) + 8 * targetDistSum;
     }
 }

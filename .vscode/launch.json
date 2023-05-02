@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "CenterPrun",
+            "request": "launch",
+            "mainClass": "CenterPrun",
+            "projectName": "555solver_45d812ed"
+        },
+        {
+            "type": "java",
             "name": "Launch EquatorPrun",
             "request": "launch",
             "mainClass": "EquatorPrun",

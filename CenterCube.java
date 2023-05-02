@@ -74,6 +74,7 @@ public class CenterCube extends Cube {
     public static final int numberOfMoves = moves.length;
     public static final byte[] solved = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     public static final int numberOfPieces = solved.length-1;
+    private static final int[] blockTable = {0, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 1, 2, 2, 3, 2, 2, 1, 2, 2, 1, 2, 3, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 3, 3, 2, 2, 3, 3, 1, 2, 2, 2, 2, 3, 1, 2, 1, 2, 2, 2, 2, 3, 2, 1, 1, 2, 2, 2, 2, 3, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3, 2, 3, 3, 4, 3, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 3, 3, 3, 2, 3, 3, 3, 2, 2, 3, 3, 2, 2, 3, 3, 2, 3, 3, 3, 3, 4, 2, 3, 2, 2, 3, 3, 3, 3, 2, 2, 1, 2, 2, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 1, 2, 1, 2, 2, 3, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 2, 3, 3, 3, 2, 3, 3, 3, 3, 3, 4, 4, 3, 3, 4, 4, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 3, 3, 3, 3, 3, 2, 1, 2, 2, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 2, 3, 2, 3, 3, 4, 3, 3, 1, 2, 2, 1, 2, 3, 2, 2, 2, 3, 3, 3, 2, 3, 3, 3, 3, 3, 4, 4, 3, 3, 4, 4, 2, 3, 3, 3, 3, 4, 2, 3, 2, 3, 3, 2, 2, 3, 3, 2, 1, 2, 2, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 2, 3, 2, 3, 3, 4, 3, 3, 2, 3, 3, 2, 3, 4, 3, 3, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 3, 3, 2, 2, 3, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 3, 2, 2, 3, 3, 2, 2, 3, 3, 3, 3, 4, 3, 3, 2, 2, 3, 3, 3, 3, 3, 3, 3, 4, 3, 4, 4, 5, 4, 4, 3, 3, 3, 3, 4, 4, 4, 4, 2, 3, 3, 3, 2, 3, 3, 3, 2, 2, 3, 3, 2, 2, 3, 3, 3, 4, 3, 4, 3, 4, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 1, 2, 2, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 2, 3, 2, 3, 3, 4, 3, 3, 2, 3, 3, 2, 3, 4, 3, 3, 2, 3, 3, 3, 2, 3, 3, 3, 3, 3, 4, 4, 3, 3, 4, 4, 1, 2, 2, 2, 2, 3, 1, 2, 2, 2, 3, 3, 3, 3, 2, 2, 1, 2, 2, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 2, 3, 2, 3, 3, 4, 3, 3, 2, 3, 3, 2, 3, 4, 3, 3, 2, 3, 3, 3, 2, 3, 3, 3, 3, 3, 4, 4, 3, 3, 4, 4, 2, 3, 3, 3, 3, 4, 2, 3, 1, 2, 2, 2, 2, 3, 2, 1};
 
     public CenterCube() {
         perm = new byte[solved.length];
@@ -223,81 +224,36 @@ public class CenterCube extends Cube {
         return solutionMove;
     }
 
-    private boolean pcsSolvedHTR(int[] positions) { // reduce to HTR
-        for (int pos : positions) {
-            if (perm[pos]%3 != solved[pos]%3) return false;
-        }
-        return true;
-    }
-
-    private boolean anySetSolvedHTR(int[][] positionsSet) {
-        for (int[] positions : positionsSet) {
-            if (pcsSolvedHTR(positions)) return true;
-        }
-        return false;
-    }
-
-    private int countSolvedHTR(int[] positions, int pseudo) {
-        int acc = 0;
-        for (int pos : positions) {
-            if (perm[pos]%3 == pseudo) acc += 1;
-        }
-        return acc;
-    }
-
-
-    private boolean pcsSolvedPseudo(int[] positions, int pseudo) { // reduce to HTR
-        for (int pos : positions) {
-            if (perm[pos]%3 != pseudo) return false;
-        }
-        return true;
-    }
-
-    private boolean anySetSolvedPseudo(int[][] positionsSet, int pseudo) {
-        for (int[] positions : positionsSet) {
-            if (pcsSolvedPseudo(positions, pseudo)) return true;
-        }
-        return false;
-    }
-
-    private double h_helper() {
-        if (!anySetSolvedHTR(new int[][] {{UB}, {UR}, {UF}, {UL}})) return 25;
-        if (!anySetSolvedHTR(new int[][] {{UB, UBR, UR}, {UR, UFR, UF}, {UF, UFL, UL}, {UL, UBL, UB}})) return 24;
-        if (!anySetSolvedHTR(new int[][] {{UB, UBR, UR, UFR, UF}, {UR, UFR, UF, UFL, UL}, {UF, UFL, UL, UBL, UB}, {UL, UBL, UB, UBR, UR}})) return 23;
-        if (!anySetSolvedHTR(new int[][] {{DB}, {DR}, {DF}, {DL}})) return 22;
-        if (!anySetSolvedHTR(new int[][] {{DB, DBL, DL}, {DF, DFL, DL}, {DB, DBR, DR}, {DF, DFR, DR}})) return 21;
-        if (!anySetSolvedHTR(new int[][] {{DB, DBR, DR, DFR, DF}, {DR, DFR, DF, DFL, DL}, {DF, DFL, DL, DBL, DB}, {DL, DBL, DB, DBR, DR}})) return 20;
-        if (!anySetSolvedHTR(new int[][] {{0, 1, 2, 3, 4, 5, 6, 7, 40, 41, 42, 43, 44, 45, 46, 47}})) {
-            if (!anySetSolvedPseudo(new int[][] {{FUR, FR, FDR, BUR, BR, BDR}, {FUL, FL, FDL, BUL, BL, BDL}}, 0)) {
-                int topHTR = countSolvedHTR(new int[] {0, 1, 2, 3, 4, 5, 6, 7}, 0);
-                int bottomHTR = countSolvedHTR(new int[] {40, 41, 42, 43, 44, 45, 46, 47}, 0);
-                if (topHTR != 8 && topHTR != 5) return 19;
-                if (bottomHTR != 8 && bottomHTR != 5) return 18;
-                if (topHTR != 8 && bottomHTR != 8) return 17;
-                if (!anySetSolvedPseudo(new int[][] {{FUL, FU, FUR}, {FUR, FR, FDR}, {FDR, FD, FDL}, {FDL, FL, FUL}, {BUL, BU, BUR}, {BUR, BR, BDR}, {BDR, BD, BDL}, {BDL, BL, BUL}}, 0)) {
-                    if (!anySetSolvedPseudo(new int[][] {{FUL, FU}, {FU, FUR}, {FUR, FR}, {FR, FDR}, {FDR, FD}, {FD, FDL}, {FDL, FL}, {FL, FUL}, {BUL, BU}, {BU, BUR}, {BUR, BR}, {BR, BDR}, {BDR, BD}, {BD, BDL}, {BDL, BL}, {BL, BUL}}, 0)) return 16;
-                    return 15;
-                }
-                return 14;
-            }
-            return 13;
-        }
-        if (!anySetSolvedHTR(new int[][] {{LU}, {LF}, {LD}, {LB}})) return 12;
-        if (!anySetSolvedHTR(new int[][] {{LU, LUF, LF}, {LF, LDF, LD}, {LD, LDB, LB}, {LB, LUB, LU}})) return 11;
-        if (!anySetSolvedHTR(new int[][] {{LU, LUF, LF, LDF, LD}, {LF, LDF, LD, LDB, LB}, {LD, LDB, LB, LUB, LU}, {LB, LUB, LU, LUF, LF}})) return 10;
-        if (!anySetSolvedHTR(new int[][] {{RU}, {RF}, {RD}, {RB}})) return 9;
-        if (!anySetSolvedHTR(new int[][] {{RU, RUF, RF}, {RF, RDF, RD}, {RD, RDB, RB}, {RB, RUB, RU}})) return 8;
-        if (!anySetSolvedHTR(new int[][] {{RU, RUF, RF, RDF, RD}, {RF, RDF, RD, RDB, RB}, {RD, RDB, RB, RUB, RU}, {RB, RUB, RU, RUF, RF}})) return 7;
-        if (!anySetSolvedHTR(new int[][] {{8, 9, 10, 11, 12, 13, 14, 15, 24, 25, 26, 27, 28, 29, 30, 31}})) {
-            if (!anySetSolvedPseudo(new int[][] {{FUL, FU, FUR}, {FUR, FR, FDR}, {FDR, FD, FDL}, {FDL, FL, FUL}}, 1)) return 6;
-            if (!anySetSolvedPseudo(new int[][] {{BUL, BU, BUR}, {BUR, BR, BDR}, {BDR, BD, BDL}, {BDL, BL, BUL}}, 1)) return 5;
-            return 4;
-        }
-        if (!this.isSolved()) return 3;
+    private int pcWeight(int pos, int bitIndex, int target) {
+        if (perm[pos] == target) return (1 << bitIndex);
         return 0;
     }
 
+    public int blockCount(int target) {
+        int blocks = 0;
+        for (int pos=0; pos<numberOfPieces-1; pos += 8) {
+            int faceIndex = pcWeight(pos, 8, target) + pcWeight(pos+1, 7, target)
+                        + pcWeight(pos+2, 6, target) + pcWeight(pos+7, 5, target)
+                        + pcWeight(pos+3, 3, target) + pcWeight(pos+6, 2, target)
+                        + pcWeight(pos+5, 1, target) + pcWeight(pos+4, 0, target);
+            if (solved[pos] == target) faceIndex += 1 << 4;
+            blocks += blockTable[faceIndex];
+        }
+        return blocks;
+    }
+
+    public double scaleHeuristic(double x) {
+        if (x <= 12) return x;
+        return scaleHeuristic(12) + 0.5*(x-12);
+    }
+
     public double h() {
-        return (h_helper() * 2);
+        int plusDepth = CenterPrun.plusDepthTable[CenterPrun.plusCtrIndex(perm)];
+        int xDepth = CenterPrun.xDepthTable[CenterPrun.xCtrIndex(perm)];
+        if (plusDepth != 0 || xDepth != 0) {
+            return scaleHeuristic(23) + Math.max(plusDepth, xDepth) + blockCount(0);
+        }
+        if (isSolved()) return 0;
+        return Math.max(1, scaleHeuristic(blockCount(1) + blockCount(2)));
     }
 }

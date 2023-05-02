@@ -106,8 +106,8 @@ public class FiveByFiveSolver {
     }
 
     public static void edgeCubeSolve() {
-        int numScrambles = 25;
-        Random rand = new Random(369818312);
+        int numScrambles = 100;
+        Random rand = new Random(369818355);
         final String[] moves = {"U", "D", "R", "L", "F", "B"};
         String[] scrambles = new String[numScrambles];
         for (int i=0; i<numScrambles; i++) {
@@ -128,17 +128,16 @@ public class FiveByFiveSolver {
             String setup = scrambles[i];
             CenterCube pzl1 = new CenterCube();
             pzl1.executeStr(setup);
-            String centerSol = rbfs(pzl1);
-
+            System.out.println(setup);
+            
             double startTime = System.currentTimeMillis();
             steps = 0;
+            String centerSol = rbfs(pzl1);
             EdgeCube pzl2 = new EdgeCube();
-            System.out.println(scrambles[i]);
-            System.out.println(centerSol);
             pzl2.executeStr(setup + " " + centerSol);
             String edgeSol = rbfs(pzl2);
             String fullSol = centerSol + edgeSol;
-            System.out.println(edgeSol);
+            System.out.println(fullSol);
             EdgeCube pzl = new EdgeCube();
             pzl.executeStr(setup + " " + fullSol);
             System.out.println("done: "+(i+1)+"/"+numScrambles);
@@ -148,9 +147,9 @@ public class FiveByFiveSolver {
             //System.out.println("swap: " +(pzl).swapCount(pzl.getWingCycles()));
             //System.out.println("ctr: " + (pzl.centerDistance(0, 40) + pzl.centerDistance(8, 24) + pzl.centerDistance(16, 32)));
             //System.out.println("h: "+(pzl).h());
-            System.out.println("len: "+(edgeSol.length() - edgeSol.replaceAll(" ","").length()));
+            System.out.println("len: "+(fullSol.length() - fullSol.replaceAll(" ","").length()));
             totalSteps += steps;
-            totalLen += (edgeSol.length() - edgeSol.replaceAll(" ","").length());
+            totalLen += (fullSol.length() - fullSol.replaceAll(" ","").length());
             totalTime += System.currentTimeMillis()-startTime;
         }
         System.out.println("\n\nAverage nodes: "+(totalSteps/((double)(numScrambles))));
@@ -158,103 +157,11 @@ public class FiveByFiveSolver {
         System.out.println(" Average time: "+(((int)(totalTime))/1000.0/numScrambles)+"s");
     }
 
-    //  -------------------------------------start of new stuff--------------------------------------
-
-    private static int combine(int a, int b) {
-        int x = Math.max(a, b);
-        return x*(x-3)/2 + a + b;
-    }
-
-    // precondition: EdgeCube e is Uw2 or Dw2 from reduction
-    public static int wingIndex(EdgeCube e) {
-        byte[] cyc = e.getWingCycles();
-        int a = -1;
-        int b = -1;
-        int c = -1;
-        int d = -1;
-        for (int i=0; i<24; i++) {
-            if (cyc[i] != i) {
-                if (a == -1) a = i;
-                else if (cyc[i] == a) b = i;
-                else if (c == -1) c = i;
-                else d = i;
-            }
-        }
-        return combine(combine(a, b), combine(c, d));
-    }
-
-    // precondition: EdgeCube e is Uw2 or Dw2 from reduction
-    public static int centerIndex(EdgeCube e) {
-        int factor = 1;
-        int acc = 0;
-        for (int i=9; i<40; i+=2) {
-            if (e.getCenterPerm()[i] != EdgeCube.centerSolved[i]) {
-                acc += ((i%8)>>1)*factor;
-                factor *= 4;
-            }
-        }
-        return acc;
-    }
-
-    public static int fullIndex(EdgeCube e) {
-        int symData = EquatorPrun.symReference[wingIndex(e)];
-        return ((symData >> 5) << 8) + EquatorPrun.centerTransformTable[centerIndex(e)*32+(symData & 31)];
-    }
-
-    public static int fullIndex(int wingIdx, int centerIdx) {
-        int symData = EquatorPrun.symReference[wingIdx];
-        return ((symData >> 5) << 8) + EquatorPrun.centerTransformTable[centerIdx*32+(symData & 31)];
-    }
-
-    public static void equatorTest() {
-        EdgeCube e = new EdgeCube();
-        e.executeStr("Uw2 R U R' Uw2 R2 U L U2 L' Uw B U2 B' Uw' L2 R2 Dw' L2 R2 Uw2 L2 R2 Dw' L2 R2");
-        for (byte[] cycle : e.getPossibleSwaps(e.getWingCycles())) {
-            for (byte b : cycle) System.out.print(b+" ");
-            System.out.println();
-        }
-        System.out.println(fullIndex(e));
-        System.out.println(EquatorPrun.fullDepthTable[fullIndex(e)]);
-    }
-
-// ------------------------------- start of cycles stuff ------------------------------------------------------------
-
-    public static void cyclesTest() {
-        EdgeCube e = new EdgeCube();
-        e.executeStr("Uw2 R U R' F Uw2");
-        e.printCycles();
-
-        for (byte[] bar : e.getPossibleSwaps(e.getWingCycles())) {
-            for (byte b : bar) {
-                System.out.print(b);
-                System.out.print(" ");  
-            }
-            System.out.println();
-        }
-
-        System.out.println("UD ctr: " + e.centerDistance(0, 40));
-        System.out.println("LR ctr: " + e.centerDistance(8, 24));
-        System.out.println("FB ctr: " + e.centerDistance(16, 32));
-
-        System.out.println("full depth: " + e.getMinDepth(2));
-
-        System.out.println("------------");
-    }
-
     public static void main(String[] args) {
-        webDemo();
-        // edgeCubeSolve();
-        // equatorTest();
-        // cyclesTest();
-
-        /*
-        EdgeCube e = new EdgeCube();
-        e.executeStr("U F L' Rw2 U D L R U' D' Rw2 U L D R B R' F B2 L");
-        System.out.println(e.h());
-        System.out.println(rbfs(e));
-        */
+        // webDemo();
+        edgeCubeSolve();
         
-        
+        // centerCubeSolve();
     }
       
 }

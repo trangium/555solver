@@ -75,6 +75,24 @@ public class CenterCube extends Cube {
     public static final byte[] solved = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     public static final int numberOfPieces = solved.length-1;
     private static final int[] blockTable = {0, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 1, 2, 2, 3, 2, 2, 1, 2, 2, 1, 2, 3, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 3, 3, 2, 2, 3, 3, 1, 2, 2, 2, 2, 3, 1, 2, 1, 2, 2, 2, 2, 3, 2, 1, 1, 2, 2, 2, 2, 3, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3, 2, 3, 3, 4, 3, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 3, 3, 3, 2, 3, 3, 3, 2, 2, 3, 3, 2, 2, 3, 3, 2, 3, 3, 3, 3, 4, 2, 3, 2, 2, 3, 3, 3, 3, 2, 2, 1, 2, 2, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 1, 2, 1, 2, 2, 3, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 2, 3, 3, 3, 2, 3, 3, 3, 3, 3, 4, 4, 3, 3, 4, 4, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 3, 3, 3, 3, 3, 2, 1, 2, 2, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 2, 3, 2, 3, 3, 4, 3, 3, 1, 2, 2, 1, 2, 3, 2, 2, 2, 3, 3, 3, 2, 3, 3, 3, 3, 3, 4, 4, 3, 3, 4, 4, 2, 3, 3, 3, 3, 4, 2, 3, 2, 3, 3, 2, 2, 3, 3, 2, 1, 2, 2, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 2, 3, 2, 3, 3, 4, 3, 3, 2, 3, 3, 2, 3, 4, 3, 3, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 3, 3, 2, 2, 3, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 3, 2, 2, 3, 3, 2, 2, 3, 3, 3, 3, 4, 3, 3, 2, 2, 3, 3, 3, 3, 3, 3, 3, 4, 3, 4, 4, 5, 4, 4, 3, 3, 3, 3, 4, 4, 4, 4, 2, 3, 3, 3, 2, 3, 3, 3, 2, 2, 3, 3, 2, 2, 3, 3, 3, 4, 3, 4, 3, 4, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 1, 2, 2, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 2, 3, 2, 3, 3, 4, 3, 3, 2, 3, 3, 2, 3, 4, 3, 3, 2, 3, 3, 3, 2, 3, 3, 3, 3, 3, 4, 4, 3, 3, 4, 4, 1, 2, 2, 2, 2, 3, 1, 2, 2, 2, 3, 3, 3, 3, 2, 2, 1, 2, 2, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 2, 3, 2, 3, 3, 4, 3, 3, 2, 3, 3, 2, 3, 4, 3, 3, 2, 3, 3, 3, 2, 3, 3, 3, 3, 3, 4, 4, 3, 3, 4, 4, 2, 3, 3, 3, 3, 4, 2, 3, 1, 2, 2, 2, 2, 3, 2, 1};
+    public static final HashMap<CenterCube, Integer> endTable = new HashMap<CenterCube, Integer>();
+    static {
+        endTable.put(new CenterCube(), 0);
+        for (int i=1; i<=3; i++) {
+            for (CenterCube c : new HashSet<CenterCube>(endTable.keySet())) {
+                for (CenterCube nbr : c.getNeighbors()) {
+                    if (!endTable.containsKey(nbr)) {
+                        endTable.put(nbr, i);
+                    }
+                }
+            }
+        }
+        for (CenterCube c : new HashSet<CenterCube>(endTable.keySet())) {
+            CenterCube toggled = new CenterCube(c);
+            toggled.toggleParity();
+            endTable.put(toggled, 7-endTable.get(c));
+        }
+    }
 
     public CenterCube() {
         perm = new byte[solved.length];
@@ -121,6 +139,10 @@ public class CenterCube extends Cube {
         return perm;
     }
 
+    public void toggleParity() {
+        perm[numberOfPieces] ^= 1;
+    }
+
     private void cycle(int[] positions, int amount) {
         assert positions.length == 4;
         byte temp;
@@ -161,7 +183,7 @@ public class CenterCube extends Cube {
             cycle(positions, amount);
         }
         if (moveIndex >= 6 && amount != 1) {
-            perm[numberOfPieces] ^= 1;
+            toggleParity();
         }
     }
 
@@ -243,17 +265,19 @@ public class CenterCube extends Cube {
     }
 
     public double scaleHeuristic(double x) {
-        if (x <= 12) return x;
-        return scaleHeuristic(12) + 0.5*(x-12);
+        return Math.max(4, 0.35*x);
     }
 
     public double h() {
         int plusDepth = CenterPrun.plusDepthTable[CenterPrun.plusCtrIndex(perm)];
         int xDepth = CenterPrun.xDepthTable[CenterPrun.xCtrIndex(perm)];
         if (plusDepth != 0 || xDepth != 0) {
-            return scaleHeuristic(23) + Math.max(plusDepth, xDepth) + blockCount(0);
+            return scaleHeuristic(23) + 0.5*(Math.max(plusDepth, xDepth) + blockCount(0));
         }
         if (isSolved()) return 0;
-        return Math.max(1, scaleHeuristic(blockCount(1) + blockCount(2)));
+        
+        if (endTable.containsKey(this)) return endTable.get(this);
+
+        return scaleHeuristic(blockCount(1) + blockCount(2));
     }
 }

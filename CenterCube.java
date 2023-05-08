@@ -71,7 +71,6 @@ public class CenterCube extends Cube {
     };
     public static final List<String> moveStr = Arrays.asList("U", "R", "F", "D", "L", "B", "Uw", "Rw", "Fw", "Dw", "Lw", "Bw");
     public static final List<String> moveAmts = Arrays.asList("", "2", "'");
-    public static final double[] moveWeights = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.3, 1.3, 1.3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.3, 1.3, 1.3};
     public static final int numberOfMoves = moves.length;
     public static final byte[] solved = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     public static final int numberOfPieces = solved.length-1;
@@ -202,10 +201,6 @@ public class CenterCube extends Cube {
                     break;
             }
         }
-    }
-
-    public double getMoveWeight(int moveIndex) {
-        return moveWeights[moveIndex];
     }
 
     public CenterCube[] getNeighbors() {

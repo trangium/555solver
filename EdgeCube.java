@@ -145,6 +145,7 @@ public class EdgeCube extends Cube {
 
     public static final List<String> moveStr = Arrays.asList("U", "R", "F", "D", "L", "B", "Uw", "Rw", "Fw", "Dw", "Lw", "Bw");
     public static final List<String> moveAmts = Arrays.asList("", "2", "'");
+    public static final double[] moveWeights = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.3, 1.3, 1.3, 1, 1, 1, 1, 1, 1.3};
     private static final int[] axis = {0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 1, 2, 0, 1, 2};
     private static final int[] moveType = {0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, -6, -5, -4, -3, -2, -1};
     public static final int numberOfMoves = centerMoves.length;
@@ -365,6 +366,10 @@ public class EdgeCube extends Cube {
                     break;
             }
         }
+    }
+    
+    public double getMoveWeight(int moveIndex) {
+        return moveWeights[moveIndex];
     }
 
     public EdgeCube[] getNeighbors() {
@@ -663,8 +668,8 @@ public class EdgeCube extends Cube {
     public double h() {
         if (isSolved()) return 0;
         byte[] wingCycles = getWingCycles();
-        int wingSwaps = swapCount(wingCycles);
         int wingFlips = flipCount(wingCycles);
+        int wingSwaps = swapCount(wingCycles); // mutates wingCycles
         int ctr_1 = centerDistance(0, 40);
         int ctr_2 = centerDistance(8, 24);
         int ctr_3 = centerDistance(16, 32);

@@ -178,7 +178,7 @@ public class FiveByFiveSolver {
     }
 
     public static void iterativeRBFStest() {
-        String[] centerMoves = new String[] {"U", "U2", "U'", "R", "R2", "R'", "F", "F2", "F'", "D", "D2", "D'", "L", "L2", "L'", "B", "B2", "B'", "Uw", "Uw2", "Uw'", "Rw", "Rw2", "Rw'", "Fw", "Fw2", "Fw'", "Dw", "Dw2", "Dw'", "Lw", "Lw2", "Lw'", "Bw", "Bw2", "Bw'"};
+        // String[] centerMoves = new String[] {"U", "U2", "U'", "R", "R2", "R'", "F", "F2", "F'", "D", "D2", "D'", "L", "L2", "L'", "B", "B2", "B'", "Uw", "Uw2", "Uw'", "Rw", "Rw2", "Rw'", "Fw", "Fw2", "Fw'", "Dw", "Dw2", "Dw'", "Lw", "Lw2", "Lw'", "Bw", "Bw2", "Bw'"};
         String[] edgeMoves = new String[] {"U", "U2", "U'", "R", "R2", "R'", "F", "F2", "F'", "D", "D2", "D'", "L", "L2", "L'", "B", "B2", "B'", "Uw2", "Rw2", "Fw2", "Dw2", "Lw2", "Bw2"};
 
         String scramble = "Fw' Rw D' Rw' Uw Rw' Rw' Dw' D' Bw Rw2 F2 Fw2 Lw' Bw Rw' Dw2 D2 Bw2 Dw Uw2 Dw Uw' Fw' Lw Rw' Lw' Bw Lw F Uw' L Lw' Dw U Rw' Uw' L' U2 Fw2 B F Lw' Bw' U Fw F Bw2 D U' Uw' Bw2 Lw2 L' Rw' Rw' Uw Uw' Uw' Rw Uw' Dw Fw2 Uw B' Lw' D Rw2 Uw D Dw' F2 Bw2 Dw' Fw D Lw2 Rw' Lw Fw' Dw2 Dw' R Uw' Rw' Dw' Fw2 U2 F' Bw' Uw Lw2 B' B2 Uw2 Fw' Dw Bw' Rw Fw' Bw Bw2 R F2 R Rw Rw' Uw2 B2 Fw2 U2 Lw' Uw Rw Dw' Bw2 Fw Bw Rw L F2 Uw U' Rw Fw Uw Uw' Bw2 Fw Rw2 F' Bw Uw Lw2 R2 Uw Dw' R Rw2 F' L2 F' Lw Bw2 Dw' Uw' Fw' F Lw Rw Dw Dw D' Bw2 Fw R2 Dw B2 Rw2 L D U Lw Lw2 Bw Fw' Uw' Bw' R' B2 Fw' Lw2 B D2 Bw F2 D' Uw' Uw' Lw Rw2 Bw2 L' Uw' Uw2 Bw2 Lw2 Rw2 Lw' Rw Lw' Uw Bw' Bw2 Dw' Fw Fw' L2 B2 R2 Uw2 Bw D' Rw U2 R L Fw' D Bw U Fw Dw2 F B' Rw2 Dw Rw2 F2 Uw' F2 Uw";
@@ -210,12 +210,41 @@ public class FiveByFiveSolver {
 
     }
 
+    public static void crucialEdgeTest() {
+        // Crucial edge locations have positive crucialness. They shouldn't be solved.
+        // Non-crucial edge locations have negative crucialness. They should be solved.
+        EdgeCube e = new EdgeCube();
+        e.executeStr("Rw2 U' D2 Fw2 Uw2 Rw2 R U' Fw2");
+
+
+        // testing the crucialness of the UFr location (edge 4)
+        int currentDistance = (e.centerDistance(0, 40));
+        int minDistance = Integer.MAX_VALUE;
+        for (String seq : new String[] {"Rw2", "D Rw2", "D2 Rw2", "D' Rw2"}) {
+            EdgeCube f = new EdgeCube(e);
+            f.executeStr(seq);
+            minDistance = Math.min(minDistance, f.centerDistance(0, 40));
+        }
+        System.out.println("Crucialness to the U/D centers: " + (currentDistance - minDistance));
+
+        currentDistance = (e.centerDistance(16, 32));
+        minDistance = Integer.MAX_VALUE;
+        for (String seq : new String[] {"Uw2", "B Uw2", "B2 Uw2", "B' Uw2"}) {
+            EdgeCube f = new EdgeCube(e);
+            f.executeStr(seq);
+            minDistance = Math.min(minDistance, f.centerDistance(16, 32));
+        }
+        System.out.println("Crucialness to the F/B centers: " + (currentDistance - minDistance));
+        
+    }
+
     public static void main(String[] args) {
         // webDemo();
         // System.out.println(CenterCube.endTable);
-        // edgeCubeSolve(100, 1183833535, true, true);
-        iterativeRBFStest();
+        edgeCubeSolve(100, 1183833536, true, true);
+        // iterativeRBFStest();
         // System.out.println(java.lang.Runtime.getRuntime().totalMemory() - java.lang.Runtime.getRuntime().freeMemory());
+        // crucialEdgeTest();
 
     }
       

@@ -109,7 +109,7 @@ public class FiveByFiveSolver {
         final String[] moves = {"U", "D", "R", "L", "F", "B"};
         String acc = "";
         int prev = -99;
-        int next = -999;
+        int next = -99;
         for (int j=moveCount; j>0; j++) {
             while (next == prev || Math.abs(next - prev) == 3) next = (int)(rand.nextDouble()*6);
             acc += moves[next];

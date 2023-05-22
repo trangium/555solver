@@ -110,7 +110,7 @@ public class FiveByFiveSolver {
         String acc = "";
         int prev = -99;
         int next = -99;
-        for (int j=moveCount; j>0; j++) {
+        for (int j=moveCount; j>0; j--) {
             while (next == prev || Math.abs(next - prev) == 3) next = (int)(rand.nextDouble()*6);
             acc += moves[next];
             if (rand.nextDouble() < 0.7) acc += "w";

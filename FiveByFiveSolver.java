@@ -88,7 +88,7 @@ public class FiveByFiveSolver {
     }
 
     public static void webDemo() {
-        String setup = "R U2 Fw2 Bw Uw Dw2 Bw2 Uw' Uw U' Fw' Dw2 L R Uw Bw Bw Lw' Fw2 Bw2 Dw Bw2 Fw R' Lw' Uw R' Lw Bw Dw Uw' Uw' L2 Fw2 Rw2 Rw' Bw L' Dw2 Dw2 Rw' Dw' R Fw' Fw2 Dw Bw U Rw2 Fw2 Rw' Rw L R2 Lw' D2 Bw Uw2 Fw' Bw Fw Fw' D' Fw2 Dw2 B B Fw' Dw' U' D Uw' L D F Lw F Uw2 Dw2 Lw Uw Lw2 Bw' Lw2 Fw L Dw2 Rw Rw Lw' F' L Lw Dw2 Dw2 Lw' Fw' L2 U Rw' D2 Bw' B Uw' L' Uw Rw Dw' Uw Fw' Bw2 Dw Rw2 Rw2 Fw2 Uw2 Bw' Uw F Lw R Bw' Fw' D' Rw F2 F' Uw2 U' Rw' Lw Lw' D' Lw Bw2 F Dw R2 Fw Uw2 Bw' Lw2 Fw Fw2 F2 Lw Fw L2 Lw' Uw2 B U2 Lw2 Lw2 Bw' R' R' Uw2 Rw' Rw' Lw Uw2 Lw' B2 Uw2 D' U2 Uw2 Bw' F' Uw Rw Uw2 Lw2 Lw2 B Uw' Fw2 Dw2 Fw' Rw2 Fw2 B' Fw' U Lw' Dw2 D2 Lw2 Rw U2 F Fw' Lw' Dw B2 L' U2 R2 Uw";
+        String setup = randomMoveScramble(new Random(), 170);
         CenterCube pzl = new CenterCube();
         pzl.executeStr(setup);
         String centerSol = iterativeRBFS(pzl);
@@ -105,20 +105,27 @@ public class FiveByFiveSolver {
         }
     }
 
-    public static void edgeCubeSolve(int numScrambles, int seed, boolean centers, boolean edges) {
-        Random rand = new Random(seed);
+    public static String randomMoveScramble(Random rand, int moveCount) {
         final String[] moves = {"U", "D", "R", "L", "F", "B"};
+        String acc = "";
+        int prev = -99;
+        int next = -999;
+        for (int j=moveCount; j>0; j++) {
+            while (next == prev || Math.abs(next - prev) == 3) next = (int)(rand.nextDouble()*6);
+            acc += moves[next];
+            if (rand.nextDouble() < 0.7) acc += "w";
+            if (rand.nextDouble() < 1/3.0) acc += "2";
+            else if (rand.nextDouble() < 1/2.0) acc += "'";
+            acc += " ";
+            prev = next;
+        }
+        return acc.substring(0, acc.length()-1);
+    }
+
+    public static void edgeCubeSolve(int numScrambles, int seed, boolean centers, boolean edges) {
         String[] scrambles = new String[numScrambles];
         for (int i=0; i<numScrambles; i++) {
-            String acc = "";
-            for (int j=0; j<200; j++) {
-                acc += moves[(int)(rand.nextDouble()*6)];
-                if (rand.nextDouble() < 0.7) acc += "w";
-                if (rand.nextDouble() < 1/3.0) acc += "2";
-                else if (rand.nextDouble() < 1/2.0) acc += "'";
-                acc += " ";
-            }
-            scrambles[i] = acc.substring(0, acc.length()-1);
+            scrambles[i] = randomMoveScramble(new Random(seed), 170);
         }
         int totalSteps = 0;
         int totalLen = 0;

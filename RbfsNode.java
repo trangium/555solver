@@ -14,7 +14,7 @@ public class RbfsNode implements Comparable<RbfsNode>{
         ArrayList<RbfsNode> nodeNbrs = new ArrayList<RbfsNode>();
         for (int i=0; i<cubeNbrs.length; i++) 
             if (prevMove == -1 || cube.isValidPair(prevMove, i))
-                nodeNbrs.add(new RbfsNode(cubeNbrs[i], this, g+1, i));
+                nodeNbrs.add(new RbfsNode(cubeNbrs[i], this, g+cube.getMoveWeight(i), i));
 
         PriorityQueue<RbfsNode> fpq = new PriorityQueue<RbfsNode>();
         for (RbfsNode ni : nodeNbrs) {

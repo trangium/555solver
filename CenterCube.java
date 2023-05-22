@@ -69,6 +69,7 @@ public class CenterCube extends Cube {
         {{LUB, LUF, LDF, LDB}, {LU, LF, LD, LB}, {UBL, FUL, DFL, BDL}, {UL, FL, DL, BL}, {UFL, FDL, DBL, BUL}}, // Lw
         {{BUR, BUL, BDL, BDR}, {BU, BL, BD, BR}, {UBL, LDB, DBR, RUB}, {UB, LB, DB, RB}, {UBR, LUB, DBL, RDB}}, // Bw
     };
+    public static double[] moveWeights;
     public static final List<String> moveStr = Arrays.asList("U", "R", "F", "D", "L", "B", "Uw", "Rw", "Fw", "Dw", "Lw", "Bw");
     public static final List<String> moveAmts = Arrays.asList("", "2", "'");
     public static final int numberOfMoves = moves.length;
@@ -201,6 +202,10 @@ public class CenterCube extends Cube {
                     break;
             }
         }
+    }
+    
+    public double getMoveWeight(int moveIndex) {
+        return moveWeights[moveIndex];
     }
 
     public CenterCube[] getNeighbors() {

@@ -91,10 +91,10 @@ public class FiveByFiveSolver {
         String setup = "R U2 Fw2 Bw Uw Dw2 Bw2 Uw' Uw U' Fw' Dw2 L R Uw Bw Bw Lw' Fw2 Bw2 Dw Bw2 Fw R' Lw' Uw R' Lw Bw Dw Uw' Uw' L2 Fw2 Rw2 Rw' Bw L' Dw2 Dw2 Rw' Dw' R Fw' Fw2 Dw Bw U Rw2 Fw2 Rw' Rw L R2 Lw' D2 Bw Uw2 Fw' Bw Fw Fw' D' Fw2 Dw2 B B Fw' Dw' U' D Uw' L D F Lw F Uw2 Dw2 Lw Uw Lw2 Bw' Lw2 Fw L Dw2 Rw Rw Lw' F' L Lw Dw2 Dw2 Lw' Fw' L2 U Rw' D2 Bw' B Uw' L' Uw Rw Dw' Uw Fw' Bw2 Dw Rw2 Rw2 Fw2 Uw2 Bw' Uw F Lw R Bw' Fw' D' Rw F2 F' Uw2 U' Rw' Lw Lw' D' Lw Bw2 F Dw R2 Fw Uw2 Bw' Lw2 Fw Fw2 F2 Lw Fw L2 Lw' Uw2 B U2 Lw2 Lw2 Bw' R' R' Uw2 Rw' Rw' Lw Uw2 Lw' B2 Uw2 D' U2 Uw2 Bw' F' Uw Rw Uw2 Lw2 Lw2 B Uw' Fw2 Dw2 Fw' Rw2 Fw2 B' Fw' U Lw' Dw2 D2 Lw2 Rw U2 F Fw' Lw' Dw B2 L' U2 R2 Uw";
         CenterCube pzl = new CenterCube();
         pzl.executeStr(setup);
-        String centerSol = rbfs(pzl);
+        String centerSol = iterativeRBFS(pzl);
         EdgeCube pzl2 = new EdgeCube();
         pzl2.executeStr(setup + " " + centerSol);
-        String alg = centerSol + rbfs(pzl2);
+        String alg = centerSol + iterativeRBFS(pzl2);
         String demoURI = ("https://alg.cubing.net/?puzzle=5x5x5&alg="+alg+"&setup="+setup).replaceAll(" ","%20");;
         try {
             Desktop desktop = java.awt.Desktop.getDesktop();
@@ -239,9 +239,16 @@ public class FiveByFiveSolver {
     }
 
     public static void main(String[] args) {
-        // webDemo();
+        if (args.length > 0) {
+            CenterCube.moveWeights = new double[]{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.3, 1.3, 1.3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.3, 1.3, 1.3};
+            EdgeCube.moveWeights = new double[]{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.3, 1.3, 1.3, 1, 1, 1, 1, 1, 1.3};
+        } else {
+            CenterCube.moveWeights = new double[]{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+            EdgeCube.moveWeights = new double[]{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+        }
+        webDemo();
         // System.out.println(CenterCube.endTable);
-        edgeCubeSolve(100, 1183833536, true, true);
+        // edgeCubeSolve(100, 1183833536, true, true);
         // iterativeRBFStest();
         // System.out.println(java.lang.Runtime.getRuntime().totalMemory() - java.lang.Runtime.getRuntime().freeMemory());
         // crucialEdgeTest();

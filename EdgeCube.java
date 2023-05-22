@@ -142,7 +142,7 @@ public class EdgeCube extends Cube {
         {{ULs, FLe, DLs, BLe}}, // Lw
         {{UBm, BLe, DBm, BRe}}, // Bw
     };
-
+    public static double[] moveWeights;
     public static final List<String> moveStr = Arrays.asList("U", "R", "F", "D", "L", "B", "Uw", "Rw", "Fw", "Dw", "Lw", "Bw");
     public static final List<String> moveAmts = Arrays.asList("", "2", "'");
     private static final int[] axis = {0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 1, 2, 0, 1, 2};
@@ -365,6 +365,10 @@ public class EdgeCube extends Cube {
                     break;
             }
         }
+    }
+
+    public double getMoveWeight(int moveIndex) {
+        return moveWeights[moveIndex];
     }
 
     public EdgeCube[] getNeighbors() {

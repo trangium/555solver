@@ -1,7 +1,9 @@
 # 555solver
 
 Moves: ~79
+
 Time: ~5 seconds
+
 Memory: ~5 MB
 
 To run, download all files in the repository, and run FiveByFiveSolver.java.
